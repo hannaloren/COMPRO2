@@ -1,10 +1,12 @@
 package week2;
+
 import java.util.*;
+
 public class Week2Act1Pt3 {
-   
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        int [][] theater = new int[5][8];
+        int[][] theater = new int[5][8];
         theater[2][5] = 1; // 1 means it is booked
         theater[0][0] = 1;
 
@@ -29,12 +31,12 @@ public class Week2Act1Pt3 {
                 System.out.println("Seat already booked.");
             }
 
-        System.out.println("New Theater Seating Chart (|-|=Available, |x|=Booked):");
-        for (int i = 0; i < theater.length; i++) {
-            System.out.print("Row " + (i + 1) + ": ");
-            printRow(theater[i]);
-        }
-        seatAvailable(theater[0]);
+            System.out.println("New Theater Seating Chart (|-|=Available, |x|=Booked):");
+            for (int i = 0; i < theater.length; i++) {
+                System.out.print("Row " + (i + 1) + ": ");
+                printRow(theater[i]);
+            }
+            seatAvailable(theater[0]);
         }
 
     }
@@ -44,11 +46,12 @@ public class Week2Act1Pt3 {
         for (int seat = 0; seat < theaterRow.length; seat++) {
             if (seat != theaterRow[seat]) {
                 status++;
-            }   
+            }
         }
         System.out.println();
         System.out.println("Seat available: " + status);
     }
+
     public static void printRow(int[] row) {
         for (int seat : row) {
             System.out.print(seat == 0 ? "|-|" : "|x|");
@@ -56,6 +59,3 @@ public class Week2Act1Pt3 {
         System.out.println();
     }
 }
-
-
-
