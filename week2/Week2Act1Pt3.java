@@ -6,50 +6,56 @@ public class Week2Act1Pt3 {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        int[][] theater = new int[5][8];
-        theater[2][5] = 1; // 1 means it is booked
-        theater[0][0] = 1;
+
+        int[][] theaterSeat = new int[5][8];
+        theaterSeat[2][5] = 1; // initially booked
+        theaterSeat[0][0] = 1; // booked
 
         System.out.println("Theater Seating Chart (|-|=Available, |x|=Booked):");
-        for (int i = 0; i < theater.length; i++) {
-            System.out.print("Row " + (i + 1) + ": ");
-            printRow(theater[i]);
-        }
-        seatAvailable(theater[0]);
 
-        System.out.print("Book seat? Y/N: ");
+        System.out.print("\nBook seat? Y/N: ");
         char userChoice = sc.next().charAt(0);
+
         if (userChoice == 'Y' || userChoice == 'y') {
             System.out.print("Enter row (1-5): ");
             int row = sc.nextInt() - 1;
+
             System.out.print("Enter seat (1-8): ");
             int seat = sc.nextInt() - 1;
-            if (theater[row][seat] == 0) {
-                theater[row][seat] = 1; // Book the seat
-                System.out.println("Seat booked successfully!");
+
+            if (theaterSeat[row][seat] == 0) {
+                theaterSeat[row][seat] = 1;
+                System.out.println("\nSeat booked successfully!");
             } else {
-                System.out.println("Seat already booked.");
+                System.out.println("\nSeat already booked.");
             }
 
-            System.out.println("New Theater Seating Chart (|-|=Available, |x|=Booked):");
-            for (int i = 0; i < theater.length; i++) {
-                System.out.print("Row " + (i + 1) + ": ");
-                printRow(theater[i]);
-            }
-            seatAvailable(theater[0]);
+            // Updated display
+            System.out.println("\nNew Theater Seating Chart (|-|=Available, |x|=Booked):");
+            displayTheater(theaterSeat);
         }
 
     }
 
-    public static void seatAvailable(int[] theaterRow) {
-        int status = 0;
-        for (int seat = 0; seat < theaterRow.length; seat++) {
-            if (seat != theaterRow[seat]) {
-                status++;
+    public static void displayTheater(int[][] seat) {
+        for (int i = 0; i < seat.length; i++) {
+            System.out.print("Row " + (i + 1) + ": ");
+            printRow(seat[i]);
+        }
+        seatAvailable(seat);
+    }
+
+    public static void seatAvailable(int[][] seatingChart) {
+        int available = 0;
+
+        for (int i = 0; i < seatingChart.length; i++) {
+            for (int j = 0; j < seatingChart[i].length; j++) {
+                if (seatingChart[i][j] == 0) {
+                    available++;
+                }
             }
         }
-        System.out.println();
-        System.out.println("Seat available: " + status);
+        System.out.println("\nSeats available: " + available);
     }
 
     public static void printRow(int[] row) {
