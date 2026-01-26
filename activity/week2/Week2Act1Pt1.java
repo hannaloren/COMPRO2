@@ -1,6 +1,6 @@
 package week2;
 
-public class Week2Act1 {
+public class Week2Act1Pt1 {
     public static void main(String[] args) {
         int[] theaterRow = new int[8];
         theaterRow[3] = 1;
