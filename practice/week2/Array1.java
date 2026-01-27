@@ -14,7 +14,7 @@ public class Array1 {
         int index = -1; // -1 means it is not found/true yet
         for (int j = 0; j < values.length; j++) {
             if (values[j] == number) {
-                index = j; // found the number, set index to j
+                index = j; 
                 break;
             }
         }
