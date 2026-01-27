@@ -2,7 +2,7 @@
 Hanna Loren P. Obra
 
 # Age
-17 years old
+18 years old
 
 # Favorite Color
 pink, green, and yellow
