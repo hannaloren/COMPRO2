@@ -2,7 +2,7 @@ package week2;
 
 import java.util.*;
 
-public class Week2Act1Pt2{
+public class TheaterSeating2D{
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
