@@ -1,6 +1,6 @@
-package week2;
+package actrivity1;
 
-public class Week2Act1Pt1 {
+public class TheaterSeating {
     public static void main(String[] args) {
         int[] theaterRow = new int[8];
         theaterRow[3] = 1;
