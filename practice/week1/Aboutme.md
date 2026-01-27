@@ -5,4 +5,4 @@ Hanna Loren P. Obra
 17 years old
 
 # Favorite Color
-pink and yellow
+pink, green, and yellow
