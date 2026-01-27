@@ -1,4 +1,4 @@
-package actrivity1;
+package activity1;
 
 public class TheaterSeating {
     public static void main(String[] args) {
