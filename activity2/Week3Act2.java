@@ -1,4 +1,4 @@
-package week3;
+package activity2;
 
 import java.util.Scanner;
 
