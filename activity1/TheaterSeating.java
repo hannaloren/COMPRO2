@@ -9,7 +9,7 @@ public class TheaterSeating {
         System.out.println();
         int[] row = theaterRow;
         for (int seat : row) {
-            System.out.print(seat == 0 ? " |-| " : " |1| ");
+            System.out.print(seat == 0 ? " |0| " : " |1| ");
         }
         System.out.println();
         int status = 0;
