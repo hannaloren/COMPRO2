@@ -31,7 +31,7 @@ public class TheaterSeating2D {
                 System.out.println("\nSeat already booked.");
             }
 
-            System.out.println("\nNew Theater Seating Chart (|-|=Available, |x|=Booked):");
+            System.out.println("\nNew Theater Seating Chart (|0|=Available, |1|=Booked):");
             displayTheater(theaterSeat);
         }
 
@@ -60,7 +60,7 @@ public class TheaterSeating2D {
 
     public static void printRow(int[] row) {
         for (int seat : row) {
-            System.out.print(seat == 0 ? "|-|" : "|x|");
+            System.out.print(seat == 0 ? "|0|" : "|1|");
         }
         System.out.println();
     }
