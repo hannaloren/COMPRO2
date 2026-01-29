@@ -2,7 +2,7 @@ package activity1;
 
 import java.util.*;
 
-public class TheaterSeating2D{
+public class TheaterSeating2D {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -11,7 +11,8 @@ public class TheaterSeating2D{
         theaterSeat[2][5] = 1; // initially booked
         theaterSeat[0][0] = 1; // booked
 
-        System.out.println("Theater Seating Chart (|-|=Available, |x|=Booked):");
+        System.out.println("Theater Seating Chart (|0|=Available, |1|=Booked):");
+        displayTheater(theaterSeat);
 
         System.out.print("\nBook seat? Y/N: ");
         char userChoice = sc.next().charAt(0);
@@ -30,7 +31,6 @@ public class TheaterSeating2D{
                 System.out.println("\nSeat already booked.");
             }
 
-            // Updated display
             System.out.println("\nNew Theater Seating Chart (|-|=Available, |x|=Booked):");
             displayTheater(theaterSeat);
         }
