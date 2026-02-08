@@ -2,7 +2,7 @@ package activity2;
 
 import java.util.Scanner;
 
-public class Week3Act2 {
+public class ArrayMethods {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
@@ -11,15 +11,16 @@ public class Week3Act2 {
         double[][] array = new double[3][4];
         System.out.println("Enter a 3-by-4 matrix row by row: ");
 
-        for (int r = 0; r < array.length; r++) {
+        for (int r = 0; r < array.length; r++) { // allows user to input values for the 3 rows and 4 columns of th
+                                                 // matrix
             for (int c = 0; c < array[r].length; c++) {
                 array[r][c] = sc.nextDouble();
             }
         }
 
         System.out.println();
-        for (int c = 0; c < array[0].length; c++) {
-            double sum = sumColumn(array, c);
+        for (int c = 0; c < array[0].length; c++) { // display the sum of each column
+            double sum = getColumn(array, c); // calls the getColumn method
             System.out.println("Sum of the elements at column " + c + " is " + sum);
         }
 
@@ -29,17 +30,18 @@ public class Week3Act2 {
         double[][] array2 = new double[4][4];
         System.out.println("Enter a 4-by-4 matrix row by row: ");
 
-        for (int r2 = 0; r2 < array2.length; r2++) {
+        for (int r2 = 0; r2 < array2.length; r2++) { // allows user to input values for the 4 rows and 4 columns of the
+                                                     // matrix
             for (int c = 0; c < array2[r2].length; c++) {
                 array2[r2][c] = sc.nextDouble();
             }
         }
-        double sum = sumMajorDiagonal(array2);
+        double sum = getMajorDiagonal(array2);
         System.out.println("Sum of the elements in the major diagonal is " + sum);
 
     }
 
-    public static double sumColumn(double[][] m, int columnIndex) {
+    public static double getColumn(double[][] m, int columnIndex) { // method to get the sum of a specific column
         double sum = 0;
         for (int r = 0; r < m.length; r++) {
             sum += m[r][columnIndex];
@@ -47,7 +49,7 @@ public class Week3Act2 {
         return sum;
     }
 
-    public static double sumMajorDiagonal(double[][] m) {
+    public static double getMajorDiagonal(double[][] m) { // method to get the sum of the major diagonals
         double sum = 0;
         for (int i = 0; i < m.length; i++) {
             sum += m[i][i];
