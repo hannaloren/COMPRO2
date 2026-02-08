@@ -16,17 +16,23 @@ public class GradesArray {
 
         do {
             System.out.println("""
-                    
+
                     Menu
                     [1] Add Grade for subject
                     [2] Exit
                     """);
-            System.out.print("Enter Choice: ");
-            choice = sc.nextInt();
-            sc.nextLine(); 
+
+            try {
+                System.out.print("Enter Choice: ");
+                choice = sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input! Please enter a number.");
+                choice = 0;
+            }
+            sc.nextLine();
 
             switch (choice) {
-                case 1 -> {
+                case 1: {
                     if (count >= 50) {
                         System.out.println("Maximum entries reached.");
                         break;
@@ -48,7 +54,7 @@ public class GradesArray {
                         count++;
                     } catch (InputMismatchException e) {
                         System.out.println("Invalid input! Numbers only.");
-                        sc.nextLine(); 
+                        sc.nextLine();
                     }
                 }
             }
@@ -60,7 +66,7 @@ public class GradesArray {
     }
 
     public static void writeData() {
-
+        // method to write data to CSV file
         StringBuilder sb = new StringBuilder();
         sb.append("Subject,Prelim,Midterm,Final\n");
 
@@ -72,7 +78,8 @@ public class GradesArray {
             sb.append("\n");
         }
 
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("data.csv"))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("data.csv"))) { // bufferedWriter to write to CSV
+                                                                                   // file
             bw.write(sb.toString());
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
