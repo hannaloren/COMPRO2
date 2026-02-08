@@ -1,4 +1,5 @@
 package activity3;
+
 import java.util.*;
 
 public class Grades {
@@ -6,6 +7,7 @@ public class Grades {
         Scanner sc = new Scanner(System.in);
         int choice;
 
+        // main menu loop
         do {
             System.out.println("""
                     MAIN MENU:
@@ -14,9 +16,15 @@ public class Grades {
                     [3] Exit
                     """);
 
-            System.out.print("Enter Choice: ");
-            choice = sc.nextInt();
+            try { // try and catch block to handle non-integer input
+                System.out.print("Enter Choice: ");
+                choice = sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input! Please enter a number.");
+                choice = 0;
+            }
 
+            // subject choice loop
             switch (choice) {
                 case 1:
                     int gradeChoice;
@@ -30,9 +38,14 @@ public class Grades {
                                 [4] Go Back
                                 """);
 
-                        System.out.print("Enter Choice: ");
-                        gradeChoice = sc.nextInt();
-                        
+                        try { // try and catch block to handle non-integer input
+                            System.out.print("Enter Choice: ");
+                            gradeChoice = sc.nextInt();
+                        } catch (InputMismatchException e) {
+                            System.out.println("Invalid input! Please enter a number.");
+                            gradeChoice = 0;
+                        }
+
                         switch (gradeChoice) {
                             case 1:
                                 System.out.println("\nEnter grades for COMPRO");
@@ -57,7 +70,7 @@ public class Grades {
 
                 case 2:
                     System.out.println();
-                    System.out.println("\n====GRADE TABLE(to be implemented later)====");       
+                    System.out.println("\n====GRADE TABLE(to be implemented later)====");
                     break;
 
                 case 3:
@@ -67,8 +80,6 @@ public class Grades {
                 default:
                     System.out.println("Invalid choice!");
             }
-        } while (choice != 3);
-
-        sc.close();
+        } while (choice != 3); // loop until user chooses to exit
     }
 }
