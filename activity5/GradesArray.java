@@ -8,10 +8,11 @@ public class GradesArray {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         int choice = 0;
-
+         
+        // MENU
         do {
             System.out.println("""
-                    
+
                     Menu
                     [1] Add Grade for subject
                     [2] Display Grades
@@ -26,8 +27,9 @@ public class GradesArray {
                 sc.nextLine();
                 continue;
             }
-            sc.nextLine(); // consume newline
-
+            sc.nextLine();
+            
+            // method call for choices
             switch (choice) {
 
                 case 1:
@@ -51,6 +53,7 @@ public class GradesArray {
         sc.close();
     }
 
+    // if switch case 1
     static void addGrade(Scanner sc) {
         try (FileWriter fw = new FileWriter("grades.csv", true)) {
 
@@ -67,7 +70,7 @@ public class GradesArray {
             double finals = sc.nextDouble();
             sc.nextLine();
 
-            fw.write(subject + "," + prelim + "," + midterm + "," + finals + "\n");
+            fw.write(subject + "," + prelim + "," + midterm + "," + finals + "\n"); // write the input into csv file
             System.out.println("Grade saved successfully!");
 
         } catch (IOException e) {
@@ -78,28 +81,34 @@ public class GradesArray {
         }
     }
 
-  
-    static void displayGrades()  {
+    static void displayGrades() {
+
         File file = new File("grades.csv");
+
+        if (!file.exists()) {
+            System.out.println("No grades saved yet.");
+            return;
+        }
+
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
-            String line;
-            br.readLine(); // skip header
+            String line; // temporary to store each line from csv file
 
             while ((line = br.readLine()) != null) {
-                String[] data = line.split(",");
+
+                String[] data = line.split(","); // cuts or split strings when there is comma
+                                                    // "COMPRO,99,99,99" -> "COMPRO" "99" "99" "99"
 
                 Grade g = new Grade();
                 g.subject = data[0];
-                g.prelim = Double.parseDouble(data[1]);
+                g.prelim = Double.parseDouble(data[1]);   // parse converts double to string
                 g.midterm = Double.parseDouble(data[2]);
                 g.finals = Double.parseDouble(data[3]);
 
                 System.out.println(
-                    g.subject + " | " + g.prelim +
-                    "  " + g.midterm +
-                    " " + g.finals
-                );
+                        g.subject + " | " + g.prelim +
+                                " " + g.midterm +
+                                "  " + g.finals);
             }
 
         } catch (IOException e) {
@@ -107,7 +116,6 @@ public class GradesArray {
         }
     }
 
-    
     static class Grade {
         String subject;
         double prelim;
