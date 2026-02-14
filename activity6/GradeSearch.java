@@ -40,7 +40,7 @@ public class GradeSearch {
                     displayGrades();
                     break;
                 case 3:
-                    loadGradesFromFile(); // IMPORTANT FIX
+                    loadGradesFromFile(); // load grade before searching
                     System.out.print("Enter keyword: ");
                     String keyword = sc.nextLine();
                     search(keyword);
@@ -61,7 +61,7 @@ public class GradeSearch {
     // add grade method (switch case 1)
     static void addGrade(Scanner sc) {
 
-        try (FileWriter fw = new FileWriter("grades.csv", true)) { // add input to
+        try (FileWriter fw = new FileWriter("grades.csv", true)) { // add input to csv
 
             System.out.print("Enter Subject: ");
             String subject = sc.nextLine();
@@ -170,7 +170,7 @@ public class GradeSearch {
         }
     }
 
-    // class
+    // class for grade
     static class Grade {
         String subject;
         double prelim;
