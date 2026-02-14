@@ -3,20 +3,18 @@ package activity6;
 import java.io.*;
 import java.util.*;
 
-import activity3.Grades;
-
 public class GradeSearch {
-    static List<Grade> grades;
+
+    static List<Grade> grades = new ArrayList<>();
+
     public static void main(String[] args) {
+
         Scanner sc = new Scanner(System.in);
         int choice = 0;
-        grades = new ArrayList<>();
-         
-        // MENU
+
         do {
             System.out.println("""
-
-                    Menu
+                    \nMenu
                     [1] Add Grade for subject
                     [2] Display Grades
                     [3] Search
@@ -32,31 +30,27 @@ public class GradeSearch {
                 continue;
             }
             sc.nextLine();
-            
-            // method call for choices
+
             switch (choice) {
 
                 case 1:
                     addGrade(sc);
                     break;
-
                 case 2:
                     displayGrades();
                     break;
-
                 case 3:
-                    String keyword = "";
+                    loadGradesFromFile(); // IMPORTANT FIX
                     System.out.print("Enter keyword: ");
-                    keyword = sc.nextLine();
+                    String keyword = sc.nextLine();
                     search(keyword);
                     break;
-
                 case 4:
                     System.out.println("Exiting program...");
                     break;
-
                 default:
                     System.out.println("Invalid choice.");
+                    break;
             }
 
         } while (choice != 4);
@@ -64,9 +58,10 @@ public class GradeSearch {
         sc.close();
     }
 
-    // if switch case 1
+    // add grade method (switch case 1)
     static void addGrade(Scanner sc) {
-        try (FileWriter fw = new FileWriter("grades.csv", true)) {
+
+        try (FileWriter fw = new FileWriter("grades.csv", true)) { // add input to
 
             System.out.print("Enter Subject: ");
             String subject = sc.nextLine();
@@ -81,7 +76,11 @@ public class GradeSearch {
             double finals = sc.nextDouble();
             sc.nextLine();
 
-            fw.write(subject + "," + prelim + "," + midterm + "," + finals + "\n"); // write the input into csv file
+            fw.write(subject + "," + prelim + "," + midterm + "," + finals + "\n");
+
+            // fix into a list
+            grades.add(new Grade(subject, prelim, midterm, finals));
+
             System.out.println("Grade saved successfully!");
 
         } catch (IOException e) {
@@ -91,35 +90,29 @@ public class GradeSearch {
             sc.nextLine();
         }
     }
-    // switch case 2
-    static void displayGrades() {
+
+    // load grades from file into list
+    static void loadGradesFromFile() {
+
+        grades.clear();
 
         File file = new File("grades.csv");
-
-        if (!file.exists()) {
-            System.out.println("No grades saved yet.");
+        if (!file.exists())
             return;
-        }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
-            String line; // temporary to store each line from csv file
+            String line;
 
             while ((line = br.readLine()) != null) {
 
-                String[] data = line.split(","); // cuts or split strings when there is comma
-                                                    // "COMPRO,99,99,99" -> "COMPRO" "99" "99" "99"
+                String[] data = line.split(",");
 
-                Grade g = new Grade();
-                g.subject = data[0];
-                g.prelim = Double.parseDouble(data[1]);   // parse converts double to string
-                g.midterm = Double.parseDouble(data[2]);
-                g.finals = Double.parseDouble(data[3]);
-
-                System.out.println(
-                        g.subject + " | " + g.prelim +
-                                " " + g.midterm +
-                                "  " + g.finals);
+                grades.add(new Grade(
+                        data[0],
+                        Double.parseDouble(data[1]),
+                        Double.parseDouble(data[2]),
+                        Double.parseDouble(data[3])));
             }
 
         } catch (IOException e) {
@@ -127,41 +120,68 @@ public class GradeSearch {
         }
     }
 
-    public static double tryParseDouble(String value){
-        double parsed = -1;
-        try{
-            parsed = Double.parseDouble(value);
-        }catch (NumberFormatException e){
+    // (swicth case 2) display grades method
+    static void displayGrades() {
 
-        }
-        return parsed;
-    }
-    // switch case 3
-    public static void search(String s){
-        System.out.println("Search results: ");;
+        loadGradesFromFile();
 
-        List<Grade> filtered = grades.stream().filter(grades ->
-            grades.subject.toLowerCase().contains(s.toLowerCase()) 
-            || grades.prelim == tryParseDouble(s)
-            || grades.midterm == tryParseDouble(s)
-            || grades.finals == tryParseDouble(s)
-        ).toList();
-
-        for (Grade g : filtered){
-            System.out.printf("%-13s %-8s %.2f %4d\n", g.subject, g.prelim, g.midterm, g.finals);
+        if (grades.isEmpty()) {
+            System.out.println("No grades saved yet.\n");
+            return;
         }
 
-        if (filtered.size() == 0){
-            System.out.println("No results found....");
+        for (Grade g : grades) {
+            System.out.printf("%-12s | %.2f %.2f %.2f\n",
+                    g.subject, g.prelim, g.midterm, g.finals);
         }
     }
-    
-    class Grade {
+
+    // search method (switch case 3)
+    static void search(String s) {
+
+        System.out.println("\nSearch results:");
+
+        double num = tryParseDouble(s);
+
+        boolean found = false;
+
+        for (Grade g : grades) {
+            if (g.subject.toLowerCase().contains(s.toLowerCase())
+                    || g.prelim == num
+                    || g.midterm == num
+                    || g.finals == num) {
+
+                System.out.printf("%-12s | %.2f %.2f %.2f\n",
+                        g.subject, g.prelim, g.midterm, g.finals);
+
+                found = true;
+            }
+        }
+
+        if (!found)
+            System.out.println("No results found.");
+    }
+
+    static double tryParseDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return -9999;
+        }
+    }
+
+    // class
+    static class Grade {
         String subject;
         double prelim;
         double midterm;
         double finals;
+
+        Grade(String s, double p, double m, double f) {
+            subject = s;
+            prelim = p;
+            midterm = m;
+            finals = f;
+        }
     }
 }
-
-
