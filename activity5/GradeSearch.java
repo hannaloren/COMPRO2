@@ -1,4 +1,4 @@
-package activity6;
+package activity5;
 
 import java.io.*;
 import java.util.*;
@@ -40,7 +40,7 @@ public class GradeSearch {
                     displayGrades();
                     break;
                 case 3:
-                    loadGradesFromFile(); // load grade before searching
+                    loadGrades(); // load grade before searching
                     System.out.print("Enter keyword: ");
                     String keyword = sc.nextLine();
                     search(keyword);
@@ -61,7 +61,14 @@ public class GradeSearch {
     // add grade method (switch case 1)
     static void addGrade(Scanner sc) {
 
-        try (FileWriter fw = new FileWriter("grades.csv", true)) { // add input to csv
+        File file = new File("grades.csv");
+        boolean fileExists = file.exists();
+
+        try (FileWriter fw = new FileWriter(file, true)) {
+
+            if (!fileExists) {
+                fw.write("Subject,Prelim,Midterm,Final\n");
+            }
 
             System.out.print("Enter Subject: ");
             String subject = sc.nextLine();
@@ -78,7 +85,6 @@ public class GradeSearch {
 
             fw.write(subject + "," + prelim + "," + midterm + "," + finals + "\n");
 
-            // fix into a list
             grades.add(new Grade(subject, prelim, midterm, finals));
 
             System.out.println("Grade saved successfully!");
@@ -92,7 +98,7 @@ public class GradeSearch {
     }
 
     // load grades from file into list
-    static void loadGradesFromFile() {
+    static void loadGrades() {
 
         grades.clear();
 
@@ -103,6 +109,8 @@ public class GradeSearch {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
             String line;
+
+            br.readLine(); // ✅ SKIP HEADER LINE
 
             while ((line = br.readLine()) != null) {
 
@@ -123,7 +131,7 @@ public class GradeSearch {
     // (swicth case 2) display grades method
     static void displayGrades() {
 
-        loadGradesFromFile();
+        loadGrades();
 
         if (grades.isEmpty()) {
             System.out.println("No grades saved yet.\n");
