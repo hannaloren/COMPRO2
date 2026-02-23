@@ -2,14 +2,11 @@ package activity3;
 
 import java.util.*;
 
-public class Grades1 {
-
+public class Grades {
     static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
-
         int choice;
-
         // main menu loop
         do {
             System.out.println("""
