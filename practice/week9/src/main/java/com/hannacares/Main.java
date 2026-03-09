@@ -27,7 +27,7 @@ public class Main {
         String json2 = gson2.toJson(person2);
         System.out.println(json2);
 
-        FileWriter fw = new FileWriter("data/newdog.json");
+        FileWriter fw = new FileWriter("data/newperson.json");
         gson.toJson(person2, fw);
         fw.close();
     }
