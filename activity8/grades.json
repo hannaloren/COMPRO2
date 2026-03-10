@@ -1,0 +1,15 @@
+[
+    {
+       "subject" : "OOP",
+       "prelimGrade" : 90,
+        "midtermGrade" : 91,
+        "finalGrade" : 92
+    },
+
+    {
+        "subject" : "Data Structures",
+        "prelimGrade" : 92,
+        "midtermGrade" : 91,
+        "finalGrade" : 90
+    }
+]
