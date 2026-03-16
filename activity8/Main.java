@@ -1,17 +1,23 @@
 package com.hanna;
 
-import java.io.*;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.*;
-import com.hanna.model.Grade;
-import com.google.gson.*;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Scanner;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.hanna.model.Grade;
 
 public class Main {
+    static Scanner sc = new Scanner(System.in);
+
     public static void main(String[] args) throws IOException {
         displayMenu();
-        enterGrades();
-        displayGrades();
 
     }
 
@@ -19,7 +25,7 @@ public class Main {
         int choice;
         do {
             System.out.println("""
-                    MENU
+                    \nMENU
                     [1] Enter Grades
                     [2] Display Grades
                     [3] Exit
@@ -31,23 +37,19 @@ public class Main {
                 case 1:
                     enterGrades();
                     break;
-
                 case 2:
                     displayGrades();
                     break;
-
                 case 3:
                     System.out.println("Exiting program...");
                     break;
                 default:
                     System.out.println("Invalid choice");
-                    break;
             }
         } while (choice != 3);
     }
 
     public static int getIntInput(String message) {
-        Scanner sc = new Scanner(System.in);
         int value = 0;
 
         try {
@@ -61,10 +63,21 @@ public class Main {
     }
 
     public static void enterGrades() {
-        Gson gson = new Gson();
-        try (FileWriter fw = new FileWriter("data/grades.json", true)) {
+        Gson gson1 = new Gson();
+
+        try {
+            FileReader fr = new FileReader("data/grades.json");
+            Type gradeListType = new TypeToken<List<Grade>>() {
+            }.getType();
+            List<Grade> grades = gson1.fromJson(fr, gradeListType);
+            fr.close();
+
+            if (grades == null) {
+                grades = new java.util.ArrayList<>();
+            }
+
             Grade grade = new Grade();
-            Scanner sc = new Scanner(System.in);
+            sc.nextLine();
 
             System.out.print("Enter Subject: ");
             grade.setSubject(sc.nextLine());
@@ -78,8 +91,10 @@ public class Main {
             System.out.print("Enter Final Grade: ");
             grade.setFinalGrade(sc.nextDouble());
 
-            String json = gson.toJson(grade);
-            fw.write(json + "\n");
+            grades.add(grade);
+            Gson gson2 = new GsonBuilder().setPrettyPrinting().create();
+            FileWriter fw = new FileWriter("data/grades.json");
+            gson2.toJson(grades, fw);
             fw.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -88,18 +103,17 @@ public class Main {
     }
 
     public static void displayGrades() throws IOException {
-        FileReader fr = new FileReader("data/grades.json");
+        try (FileReader fr = new FileReader("data/grades.json")) {
+            Type gradeListType = new TypeToken<List<Grade>>() {
+            }.getType();
 
-        Type gradeListType = new TypeToken<List<Grade>>() {
-        }.getType();
+            Gson gson = new Gson();
+            List<Grade> grades = gson.fromJson(fr, gradeListType);
 
-        Gson gson = new Gson();
-        List<Grade> grades = gson.fromJson(fr, gradeListType);
-
-        for (Grade grade : grades) {
-            System.out.println(grade);
+            for (Grade grade : grades) {
+                System.out.println(grade);
+            }
         }
-        fr.close();
     }
 
 }
