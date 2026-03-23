@@ -1,18 +1,25 @@
 package activity9;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
 public class Hangman {
     static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
         UserSign();
-        // final variables
+
         final int maxPlayers = 50;
         final int numberOfGuesses = 5;
 
-        // arrays to hold player names and scores
         String playerNames[] = new String[maxPlayers];
         int playerScores[] = new int[maxPlayers];
         int currentPlayerCount = 0;
@@ -27,11 +34,10 @@ public class Hangman {
             }
         } while (anotherPlayer());
 
-        showLeaderboard(playerNames, playerScores, currentPlayerCount); // call leaderboard method
+        showLeaderboard(playerNames, playerScores, currentPlayerCount);
     }
 
     public static void UserSign() {
-
         System.out.println("""
                 USER DATA
                 [1] Existing User
@@ -40,45 +46,165 @@ public class Hangman {
                 """);
 
         int user = sc.nextInt();
-        sc.nextLine(); // clear buffer
+        sc.nextLine();
 
         switch (user) {
             case 1:
-                System.out.println("SIGN IN");
-                System.out.print("Username: ");
-                String username = sc.nextLine();
-                System.out.print("Password: ");
-                String password = sc.nextLine();
-                System.out.println("Login recorded.");
+                loginUser();
                 break;
             case 2:
-
-                try {
-                    System.out.println("SIGN UP");
-                    System.out.print("Username: ");
-                    String newUser = sc.nextLine();
-                    System.out.print("Set password: ");
-                    String newPassword = sc.nextLine();
-                    BufferedWriter bw = new BufferedWriter(
-                            new FileWriter("userdata.json", true));
-                    String json = "{ \"username\": \"" + newUser + "\", \"password\": \"" + newPassword + "\" }";
-                    bw.write(json);
-                    bw.newLine();
-                    bw.close();
-                    System.out.println("User saved to JSON.");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                registerUser();
                 break;
-
             default:
                 System.out.println("Invalid option.");
+                System.exit(0);
         }
     }
 
-    public static String ReadFile() {
+    public static void loginUser() {
+        System.out.println("SIGN IN");
+        System.out.print("Username: ");
+        String username = sc.nextLine();
+        System.out.print("Password: ");
+        String password = sc.nextLine();
+
+        String filename = "userdata.json";
+        boolean found = false;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            String content = "";
+
+            while ((line = br.readLine()) != null) {
+                content += line.trim();
+            }
+
+            content = content.replace("[", "").replace("]", "");
+
+            if (!content.trim().isEmpty()) {
+                String[] entries = content.split("\\},\\{");
+
+                for (String entry : entries) {
+                    entry = entry.replace("{", "").replace("}", "");
+
+                    String[] fields = entry.split(",");
+
+                    String fileUser = "";
+                    String filePass = "";
+
+                    for (String field : fields) {
+                        String[] pair = field.split(":");
+
+                        if (pair.length < 2)
+                            continue;
+
+                        String key = pair[0].replace("\"", "").trim();
+                        String value = pair[1].replace("\"", "").trim();
+
+                        if (key.equals("username"))
+                            fileUser = value;
+                        if (key.equals("password"))
+                            filePass = value;
+                    }
+
+                    if (fileUser.equals(username) && filePass.equals(password)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println("No user file found.");
+        }
+
+        if (found) {
+            System.out.println("Login successful!");
+        } else {
+            System.out.println("Invalid credentials.");
+            System.exit(0);
+        }
+    }
+
+    public static void registerUser() {
+        System.out.println("SIGN UP");
+        System.out.print("Username: ");
+        String newUser = sc.nextLine();
+        System.out.print("Password: ");
+        String newPass = sc.nextLine();
+
+        String filename = "userdata.json";
+        List<String> users = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                users.add(line);
+            }
+        } catch (IOException e) {
+
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename))) {
+            bw.write("[\n");
+
+            for (int i = 0; i < users.size(); i++) {
+                String line = users.get(i).trim();
+
+                if (!line.equals("[") && !line.equals("]") && !line.isEmpty()) {
+                    bw.write(line.replaceAll(",$", ""));
+                    bw.write(",\n");
+                }
+            }
+
+            bw.write("  { \"username\": \"" + newUser + "\", \"password\": \"" + newPass + "\" }\n");
+            bw.write("]");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("User registered successfully!");
+    }
+
+    public static void saveScore(String username, int score) {
+        List<String> scores = new ArrayList<>();
+
+        String existing = ReadFile("scores.json");
+
+        if (existing != null && !existing.isEmpty()) {
+            scores.addAll(Arrays.asList(existing.replace("[", "").replace("]", "").split("\n")));
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("scores.json"))) {
+            bw.write("[\n");
+
+            for (String s : scores) {
+                if (!s.trim().isEmpty() && !s.contains("]")) {
+                    bw.write(s.replaceAll(",$", "") + "\n");
+                }
+            }
+
+            bw.write("  { \"username\": \"" + username + "\", \"score\": " + score + " }\n");
+            bw.write("]");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int sumScores(String[] names, int[] scores, int count) {
+        int total = 0;
+        for (int i = 0; i < count; i++) {
+            total += scores[i];
+        }
+        return total;
+    }
+
+    public static String ReadFile(String scoresjson) {
         List<String> lines = new ArrayList<>();
-        String filename = "compro2/activity9/RandomStrings.txt";
+        String filename = "RandomStrings.txt";
+
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -87,6 +213,7 @@ public class Hangman {
         } catch (IOException e) {
             return null;
         }
+
         if (lines.isEmpty()) {
             return null;
         }
@@ -114,8 +241,7 @@ public class Hangman {
     }
 
     public static int playGame(int numberOfGuesses) {
-        int index = (int) (Math.random() * 50);
-        String word = ReadFile();
+        String word = ReadFile("scores.json");
 
         if (word == null) {
             System.out.println("Error: Could not read word from file.");
@@ -133,7 +259,7 @@ public class Hangman {
             System.out.print("Enter a letter or guess the word " + guessed + " > ");
             String input = sc.nextLine().toLowerCase();
 
-            if (input.length() > 1) { // guessing the whole word
+            if (input.length() > 1) {
                 if (input.equals(word)) {
                     points += 20;
                     guessed = word;
@@ -144,11 +270,10 @@ public class Hangman {
                 }
             }
 
-            char letter = input.charAt(0); // guessing a single letter
+            char letter = input.charAt(0);
             boolean correct = false;
             String newGuessed = "";
 
-            // reveal letters
             for (int i = 0; i < word.length(); i++) {
                 if (word.charAt(i) == letter) {
                     newGuessed += letter;
@@ -158,7 +283,6 @@ public class Hangman {
                 }
             }
 
-            // user entered the same letter or if the letter is not in the word
             if (guessed.indexOf(letter) != -1) {
                 System.out.println(letter + " is already in the word");
             } else {
@@ -172,7 +296,7 @@ public class Hangman {
             }
         }
 
-        if (guessed.indexOf("*") == -1) {
+        if (!guessed.contains("*")) {
             System.out.println("\nCongratulations! You guessed the word: " + word);
         } else {
             System.out.println("\nGAME OVER");
@@ -189,5 +313,4 @@ public class Hangman {
         }
         sc.close();
     }
-
 }

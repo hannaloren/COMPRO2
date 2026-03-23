@@ -1,8 +1,6 @@
-{
-    "username" : "hannaloren",
-    "password" : "12345678"
-
-}SIGN INUsername: 
-Password: 
-SIGN INUsername: 
-Password: 
+[
+{"username" : "hannaloren","password" : "12345678"},
+{ "username": "Maryanne", "password": "hiii" },
+{ "username": "Joyy", "password": "hello" },
+  { "username": "pretty", "password": "123" }
+]
