@@ -21,11 +21,11 @@ public class Client {
             System.out.println("Connected to the server!");
 
             String serverMessage;
-            // Read messages from server continuously
+            // read message while not null
             while ((serverMessage = in.readLine()) != null) {
                 System.out.println(serverMessage);
 
-                // if the message looks like a prompt, get user input
+                // if message has >, client needs to input
                 if (needsInput(serverMessage)) {
                     System.out.print("> "); 
                     String input = sc.nextLine();
@@ -44,6 +44,6 @@ public class Client {
         return lower.contains("choice:") || 
                lower.contains("username:") || 
                lower.contains("password:") || 
-               lower.contains("guess the word:");
+               lower.contains("guess the word:"); // if these words is in the message, client needs to input
     }
 }

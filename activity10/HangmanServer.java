@@ -12,23 +12,23 @@ public class HangmanServer {
         try (ServerSocket server = new ServerSocket(port)) {
             System.out.println("Server started. Waiting for client...");
 
-            while (true) { // Keeps server running for new connections
+            while (true) { // Keeps server running
                 try (Socket client = server.accept();
                         BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                         PrintWriter out = new PrintWriter(client.getOutputStream(), true)) {
 
                     System.out.println("Client connected: " + client.getInetAddress());
 
-                    // 1. Auth
+                    // chechk if existing or new
                     String username = authenticateClient(in, out);
                     if (username == null)
                         continue;
 
-                    // 2. Play Game
+                    // do the play game method/ clients terminal will show teh problem
                     out.println("\nWelcome " + username + "! Starting Hangman...");
                     int score = playGameWithClient(in, out, maxGuesses);
 
-                    // 3. Save & Wrap up
+                    // save the score to scores.json
                     saveScore(username, score);
                     out.println("Game finished! Your score: " + score);
                     out.println("Goodbye!");
@@ -42,7 +42,7 @@ public class HangmanServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
     }
 
     public static String authenticateClient(BufferedReader in, PrintWriter out) throws IOException {
@@ -81,9 +81,8 @@ public class HangmanServer {
             return 0;
         }
 
-        // Convert to lowercase to make it case-insensitive
         word = word.toLowerCase();
-        char[] displayArray = new char[word.length()];
+        char[] displayArray = new char[word.length()]; // display the guessed and unguessed letters (using *)
         Arrays.fill(displayArray, '*');
 
         int guessesLeft = numberOfGuesses;
@@ -99,7 +98,7 @@ public class HangmanServer {
                 continue;
             input = input.toLowerCase();
 
-            // 1. Check for WHOLE WORD GUESS
+            // whole word guess
             if (input.length() > 1) {
                 if (input.equals(word)) {
                     displayArray = word.toCharArray(); // Reveal the whole word
@@ -107,10 +106,10 @@ public class HangmanServer {
                     break;
                 } else {
                     guessesLeft--;
-                    out.println("Wrong word!");
+                    out.println("Wrong word!\n");
                 }
             }
-            // 2. Check for SINGLE LETTER GUESS
+            // single letter guess
             else {
                 char letter = input.charAt(0);
                 boolean found = false;
@@ -130,10 +129,10 @@ public class HangmanServer {
 
                 if (found) {
                     points++;
-                    out.println("Correct letter!");
+                    out.println("Correct letter!\n");
                 } else {
                     guessesLeft--;
-                    out.println("Wrong letter!");
+                    out.println("Wrong letter!\n");
                 }
             }
         }
@@ -148,7 +147,7 @@ public class HangmanServer {
         return points;
     }
 
-    // helper method
+    // helper methods
     public static String getRandomWord() {
         File file = new File("RandomStrings.txt");
         if (!file.exists())
@@ -182,17 +181,75 @@ public class HangmanServer {
     }
 
     public static void registerUser(String user, String pass) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("userdata.json", true))) {
-            bw.write("{\"username\":\"" + user + "\",\"password\":\"" + pass + "\"}");
-            bw.newLine();
+        File file = new File("userdata.json");
+        List<String> data = new ArrayList<>();
+
+        if (file.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String content = br.readLine();
+                if (content != null && content.length() > 2) {
+                    content = content.substring(1, content.length() - 1); // remove [ ]
+                    data.addAll(Arrays.asList(content.split("},\\{")));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        data.add("{\"username\":\"" + user + "\",\"password\":\"" + pass + "\"}");
+
+        try (PrintWriter pw = new PrintWriter(new FileWriter("userdata.json"))) {
+            pw.println("[");
+            for (int i = 0; i < data.size(); i++) {
+                pw.print(data.get(i));
+                if (i < data.size() - 1)
+                    pw.println(",");
+            }
+            pw.println("]");
+            pw.println();
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     public static void saveScore(String user, int score) {
-        try (PrintWriter pw = new PrintWriter(new FileWriter("scores.json", true))) {
-            pw.println("{\"username\":\"" + user + "\",\"score\":" + score + ",\"date\":\"" + new Date() + "\"}");
+    File file = new File("scores.json");
+    List<String> scores = new ArrayList<>();
+
+  
+    if (file.exists()) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            StringBuilder fullContent = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                fullContent.append(line.trim());
+            }
+            String content = fullContent.toString();
+            if (content.length() > 2) {
+                // Strip the outer brackets [ ]
+                content = content.substring(1, content.length() - 1);
+                String[] entries = content.split("(?<=\\}),(?=\\{)");
+                scores.addAll(Arrays.asList(entries));
+            }
         } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
+    // add new score record
+    scores.add("{\"username\":\"" + user + "\",\"score\":" + score + ",\"date\":\"" + new Date() + "\"}");
+
+    
+    try (PrintWriter pw = new PrintWriter(new FileWriter("scores.json", false))) { 
+        pw.println("[");
+        for (int i = 0; i < scores.size(); i++) {
+            pw.print(scores.get(i));
+            if (i < scores.size() - 1) {
+                pw.println(",");
+            }
+        }
+        pw.println("\n]");
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
 }
