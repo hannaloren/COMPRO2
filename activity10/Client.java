@@ -9,34 +9,41 @@ import java.util.Scanner;
 
 public class Client {
     public static void main(String[] args) {
-        String server = "192.168.110.204"; // same as 127.0.0.1
+        String server = "192.168.1.87"; 
         int port = 8000;
-        try (Socket socket = new Socket(server, port);
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                Scanner sc = new Scanner(System.in);) {
 
-            System.out.println("Connected to the server. Welcome");
+        try (
+            Socket socket = new Socket(server, port);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            Scanner sc = new Scanner(System.in)
+        ) {
+            System.out.println("Connected to the server!");
+
             String serverMessage;
+            // read message while not null
             while ((serverMessage = in.readLine()) != null) {
                 System.out.println(serverMessage);
-                if (serverMessage.contains("Enter") || serverMessage.contains("Guess") || serverMessage.contains("?")) {
+
+                // if message has >, client needs to input
+                if (needsInput(serverMessage)) {
+                    System.out.print("> "); 
                     String input = sc.nextLine();
                     out.println(input);
-
-                    String reply = in.readLine();
-                    if (reply == null || reply.equalsIgnoreCase("/quit")) {
-                        System.out.println("Server disconnected...");
-                        break;
-                    }
-
-                    System.out.println(reply);
                 }
             }
+            System.out.println("Server disconnected.");
 
         } catch (IOException e) {
-            System.out.println("Can't connect right now...");
+            System.out.println("Error: " + e.getMessage());
         }
+    }
 
+    public static boolean needsInput(String msg) {
+        String lower = msg.toLowerCase();
+        return lower.contains("choice:") || 
+               lower.contains("username:") || 
+               lower.contains("password:") || 
+               lower.contains("guess the word:"); // if these words is in the message, client needs to input
     }
 }
