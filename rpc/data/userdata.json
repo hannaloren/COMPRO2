@@ -1,0 +1,44 @@
+[
+  {
+    "username": "hanna",
+    "password": "hanna123",
+    "wins": 5,
+    "losses": 3
+  },
+  {
+    "username": "john",
+    "password": "john123",
+    "wins": 2,
+    "losses": 4
+  },
+  {
+    "username": "alice",
+    "password": "alice123",
+    "wins": 7,
+    "losses": 1
+  },
+  {
+    "username": "hanna",
+    "password": "ganda",
+    "wins": 1,
+    "losses": 1
+  },
+  {
+    "username": "loren",
+    "password": "ganda",
+    "wins": 1,
+    "losses": 1
+  },
+  {
+    "username": "pretty",
+    "password": "me",
+    "wins": 6,
+    "losses": 2
+  },
+  {
+    "username": "ganda",
+    "password": "ko",
+    "wins": 2,
+    "losses": 6
+  }
+]
