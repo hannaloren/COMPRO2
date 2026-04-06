@@ -1,0 +1,16 @@
+[
+  {
+    "username": "loren",
+    "password": "ganda",
+    "wins": 3,
+    "losses": 4,
+    "score": 42
+  },
+  {
+    "username": "john",
+    "password": "john123",
+    "wins": 4,
+    "losses": 3,
+    "score": 57
+  }
+]
