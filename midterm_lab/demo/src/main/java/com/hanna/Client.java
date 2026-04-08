@@ -1,10 +1,7 @@
 package com.hanna;
 
 import com.hanna.model.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -34,7 +31,6 @@ public class Client {
                     out.println(sc.nextLine());
                 }
             }
-            
 
         } catch (IOException e) {
             if (e.getMessage().contains("Connection refused")) {
