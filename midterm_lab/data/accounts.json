@@ -1,0 +1,38 @@
+[
+  {
+    "username": "john",
+    "password": "john123",
+    "wins": 4,
+    "losses": 3
+  },
+  {
+    "username": "hanna",
+    "password": "loren",
+    "wins": 20,
+    "losses": 19
+  },
+  {
+    "username": "ganda",
+    "password": "ko",
+    "wins": 14,
+    "losses": 14
+  },
+  {
+    "username": "hhaha",
+    "password": "hehe",
+    "wins": 6,
+    "losses": 6
+  },
+  {
+    "username": "bella",
+    "password": "ha",
+    "wins": 9,
+    "losses": 9
+  },
+  {
+    "username": "loren",
+    "password": "ganda",
+    "wins": 6,
+    "losses": 8
+  }
+]

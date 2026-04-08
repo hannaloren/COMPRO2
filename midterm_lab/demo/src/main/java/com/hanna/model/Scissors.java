@@ -2,7 +2,7 @@ package com.hanna.model;
 
 public class Scissors extends GameMove {
     public Scissors() {
-        super("2");
+        super("Scissors");
 
     }
 

@@ -2,7 +2,7 @@ package com.hanna.model;
 
 public class Paper extends GameMove {
     public Paper() {
-        super("1");
+        super("Paper");
     }
 
     @Override

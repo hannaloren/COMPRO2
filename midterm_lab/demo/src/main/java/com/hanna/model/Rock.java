@@ -2,7 +2,7 @@ package com.hanna.model;
 
 public class Rock extends GameMove{
     public Rock() {
-        super("0");
+        super("Rock");
     }
 
     @Override
