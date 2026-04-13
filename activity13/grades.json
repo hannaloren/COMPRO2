@@ -1,8 +1,3 @@
-[
-    {
-        "compro": 95,
-        "oop": 90,
-        "cfve": 96,
-        "ds": 90
-    }
-]
+{"subject":"Math","grade":90.5}
+{"subject":"English","grade":88.0}
+{"subject":"oop","grade":99.0}
