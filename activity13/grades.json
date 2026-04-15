@@ -1,3 +1,32 @@
-{"subject":"Math","grade":90.5}
-{"subject":"English","grade":88.0}
-{"subject":"oop","grade":99.0}
+[
+  {
+    "subject": "compro2",
+    "prelim": 99.8,
+    "midterm": 99.9,
+    "finals": 96.7
+  },
+  {
+    "subject": "dts",
+    "prelim": 93.8,
+    "midterm": 95.0,
+    "finals": 96.0
+  },
+  {
+    "subject": "oop",
+    "prelim": 90.8,
+    "midterm": 92.0,
+    "finals": 94.0
+  },
+  {
+    "subject": "cfve",
+    "prelim": 98.0,
+    "midterm": 97.0,
+    "finals": 99.0
+  },
+  {
+    "subject": "dts",
+    "prelim": 99.0,
+    "midterm": 97.0,
+    "finals": 96.0
+  }
+]
