@@ -23,7 +23,8 @@ public class Client {
                 try {
                     String response;
                     while ((response = in.readLine()) != null) {
-                        System.out.println(response);
+                        System.out.println("\n" + response);
+
                     }
                 } catch (IOException e) {
                     System.out.println("Disconnected from server.");
@@ -41,9 +42,10 @@ public class Client {
                     break;
                 }
             }
+            System.out.println("Exiting chat...");
 
         } catch (IOException e) {
-            System.out.println("Unable to connect: " + e.getMessage());
+            System.out.println("Client error: " + e.getMessage());
         }
     }
 }

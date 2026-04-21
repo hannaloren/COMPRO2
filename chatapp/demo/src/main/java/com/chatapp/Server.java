@@ -6,7 +6,7 @@ import java.net.Socket;
 
 import com.chatapp.model.ClientHandler;
 
-public class Main {
+public class Server {
     public static void main(String[] args) {
         System.out.println("Welcome to the Chat App!");
         int port = 8000;
@@ -17,7 +17,7 @@ public class Main {
 
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("New client connected (IP: " + clientSocket.getInetAddress() + ")");
+                System.out.println("New client connected at port " + clientSocket.getPort());
 
                 ClientHandler handler = new ClientHandler(clientSocket);
                 Thread thread = new Thread(handler);
@@ -29,4 +29,5 @@ public class Main {
         }
 
     }
+
 }

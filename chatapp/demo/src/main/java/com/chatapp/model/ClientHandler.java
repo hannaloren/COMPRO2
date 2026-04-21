@@ -39,7 +39,7 @@ public class ClientHandler implements Runnable {
 
             String message;
             while ((message = in.readLine()) != null) {
-
+                System.out.print("> ");
                 if (message.equalsIgnoreCase("exit")) {
                     break;
                 }
@@ -50,6 +50,8 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             System.out.println("Connection error: " + e.getMessage());
         } finally {
+            String exitMessage = username + " has left the chat.";
+            System.out.println(exitMessage);
             cleanup();
         }
     }
