@@ -35,11 +35,12 @@ public class ClientHandler implements Runnable {
                 clients.add(this);
             }
 
+            out.println("Welcome, " + username + "!");
             broadcast(username + " has joined the chat!");
 
             String message;
             while ((message = in.readLine()) != null) {
-                System.out.print("> ");
+
                 if (message.equalsIgnoreCase("exit")) {
                     break;
                 }
@@ -50,8 +51,6 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             System.out.println("Connection error: " + e.getMessage());
         } finally {
-            String exitMessage = username + " has left the chat.";
-            System.out.println(exitMessage);
             cleanup();
         }
     }
@@ -74,8 +73,7 @@ public class ClientHandler implements Runnable {
                 clients.remove(this);
             }
 
-            if (socket != null)
-                socket.close();
+            if (socket != null) socket.close();
 
         } catch (IOException e) {
             e.printStackTrace();

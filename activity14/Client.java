@@ -23,11 +23,13 @@ public class Client {
                 try {
                     String response;
                     while ((response = in.readLine()) != null) {
-                        System.out.println("\n" + response);
-
+                        System.out.print("\r"); // reset line
+                        System.out.println(response);
+                        System.out.println();
+                        System.out.print("> ");
                     }
                 } catch (IOException e) {
-                    System.out.println("Disconnected from server.");
+                    System.out.println("\nDisconnected from server.");
                 }
             });
 
@@ -35,13 +37,17 @@ public class Client {
 
             // Send messages
             String message;
+            System.out.print("> ");
             while ((message = userInput.readLine()) != null) {
                 out.println(message);
 
                 if (message.equalsIgnoreCase("exit")) {
                     break;
                 }
+
+                System.out.print("> ");
             }
+
             System.out.println("Exiting chat...");
 
         } catch (IOException e) {

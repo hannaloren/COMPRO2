@@ -8,10 +8,10 @@ import com.chatapp.model.ClientHandler;
 
 public class Server {
     public static void main(String[] args) {
-        System.out.println("Welcome to the Chat App!");
-        int port = 8000;
 
-        System.out.println("Chat server started");
+        int port = 8000;
+        System.out.println("Welcome to the Chat App!");
+        System.out.println("Chat server started on port " + port);
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
 
@@ -27,7 +27,5 @@ public class Server {
         } catch (IOException e) {
             System.out.println("Server error: " + e.getMessage());
         }
-
     }
-
 }
