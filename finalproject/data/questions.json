@@ -1,0 +1,22 @@
+[
+    {
+        "question": "What is the capital of France?",
+        "answer": "Paris"
+    },
+    {
+        "question": "5 + 7 = ?",
+        "answer": "12"
+    },
+    {
+        "question": "Java is developed by?",
+        "answer": "Sun Microsystems"
+    },
+    {
+        "question": "What planet is known as the Red Planet?",
+        "answer": "Mars"
+    },
+    {
+        "question": "What keyword creates an object in Java?",
+        "answer": "new"
+    }
+]
