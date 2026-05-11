@@ -1,29 +1,20 @@
 package com.example;
 
-import com.google.gson.*;
 import java.io.*;
 import java.net.*;
 
 public class ClientHandler extends Thread {
-
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-
-    private String playerName;
-    private int score;dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddm
+    private String playerName = "Anonymous";
+    private int score = 0;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
-
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             out = new PrintWriter(socket.getOutputStream(), true);
-
-            out.println("ENTER_NAME");
-            playerName = in.readLine();
-
-            System.out.println(playerName + " joined the game.");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -32,11 +23,23 @@ public class ClientHandler extends Thread {
     @Override
     public void run() {
         try {
-            while (true) {
+            // Handle Registration
+            out.println("ENTER_NAME");
+            String input = in.readLine();
+            if (input != null && !input.trim().isEmpty()) {
+                this.playerName = input.trim();
+            }
+            System.out.println("Player registered: " + this.playerName);
+            out.println("Welcome " + this.playerName + "! Wait for admin to start...");
+
+            // Keep thread alive but do nothing; the Server will call receiveAnswer()
+            while (!socket.isClosed()) {
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
             System.out.println(playerName + " disconnected.");
+        } finally {
+            cleanup();
         }
     }
 
@@ -46,22 +49,20 @@ public class ClientHandler extends Thread {
 
     public String receiveAnswer() {
         try {
-            socket.setSoTimeout(10000);
+            // Wait for exactly one line of input for the current question
             return in.readLine();
-        } catch (Exception e) {
+        } catch (IOException e) {
             return null;
         }
     }
 
-    public String getPlayerName() {
-        return playerName;
+    private void cleanup() {
+        try {
+            if (socket != null) socket.close();
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
-    public int getScore() {
-        return score;
-    }
-
-    public void addScore() {
-        score++;
-    }
+    public String getPlayerName() { return playerName; }
+    public int getScore() { return score; }
+    public void addScore() { score++; }
 }
