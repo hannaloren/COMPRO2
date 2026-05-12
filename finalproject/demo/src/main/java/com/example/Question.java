@@ -1,6 +1,7 @@
 package com.example;
 
 public class Question {
+
     private String question;
     private String answer;
 
@@ -19,10 +20,4 @@ public class Question {
     public String getAnswer() {
         return answer;
     }
-    
-    @Override
-    public String toString() {
-        return question + " - " + answer;
-    }
 }
-
