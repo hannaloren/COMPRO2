@@ -6,30 +6,27 @@ import java.net.Socket;
 public class ClientHandler extends Thread {
 
     private Socket socket;
-
     private BufferedReader in;
     private PrintWriter out;
 
-    private String playerName;
+    private String name;
+    private String code;
 
     private int score = 0;
 
-    private volatile String latestAnswer = null;
+    private volatile String answer = null;
+    private volatile boolean canAnswer = false;
+
+    private long answerDeadline = 0;
 
     public ClientHandler(Socket socket) {
 
         this.socket = socket;
 
         try {
-
-            in = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream()));
-
-            out = new PrintWriter(
-                    socket.getOutputStream(),
-                    true);
-
-        } catch (IOException e) {
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -39,70 +36,65 @@ public class ClientHandler extends Thread {
 
         try {
 
-            out.println("CLEAR");
-
-            out.println("=================================");
-            out.println("          QUIZIFY LOGIN");
-            out.println("=================================");
-
             out.println("ENTER_NAME");
-            String nameInput = in.readLine();
+            String n = in.readLine();
 
             out.println("ENTER_PASSWORD");
-            String passwordInput = in.readLine();
+            String p = in.readLine();
 
             out.println("ENTER_CODE");
-            String codeInput = in.readLine();
+            String c = in.readLine();
 
-            if (nameInput == null ||
-                    passwordInput == null ||
-                    codeInput == null) {
+            this.code = c;
 
-                cleanup();
+            if (!QuizServer.verifyStudent(n, p, c, this)) {
+                out.println("FAILED");
+                socket.close();
                 return;
             }
 
-            boolean verified = QuizServer.verifyStudent(
-                    nameInput,
-                    passwordInput,
-                    codeInput);
-
-            if (!verified) {
-
-                out.println("VERIFICATION_FAILED");
-                cleanup();
-                return;
-            }
-
-            this.playerName = nameInput.trim();
+            this.name = n;
 
             out.println("VERIFIED");
-
-            System.out.println(
-                    "Verified Student: "
-                            + playerName);
-
-            out.println("\nWELCOME " + playerName);
-            out.println("Waiting for quiz to start...");
 
             while (!socket.isClosed()) {
 
                 String msg = in.readLine();
-
                 if (msg == null)
                     break;
 
-                latestAnswer = msg.trim();
+                if (msg.equals("PING")) {
+                    QuizServer.updateHeartbeat(code);
+                    continue;
+                }
+
+                if (canAnswer) {
+
+                    if (System.currentTimeMillis() > answerDeadline) {
+                        QuizServer.reportCheater(name, "Late Answer Attempt");
+                        continue;
+                    }
+
+                    if (answer == null) {
+                        answer = msg.trim();
+                    }
+                }
             }
 
         } catch (Exception e) {
-
-            System.out.println(playerName + " disconnected.");
-
+            System.out.println(name + " disconnected");
         } finally {
-
             cleanup();
         }
+    }
+
+    public void enableAnswering() {
+        canAnswer = true;
+        answerDeadline = System.currentTimeMillis() + 30000;
+    }
+
+    public void disableAnswering() {
+        canAnswer = false;
     }
 
     public void sendMessage(String msg) {
@@ -110,28 +102,15 @@ public class ClientHandler extends Thread {
     }
 
     public String getLatestAnswer() {
-        return latestAnswer;
+        return answer;
     }
 
     public void resetAnswer() {
-        latestAnswer = null;
-    }
-
-    private void cleanup() {
-
-        try {
-
-            if (socket != null) {
-                socket.close();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        answer = null;
     }
 
     public String getPlayerName() {
-        return playerName;
+        return name;
     }
 
     public int getScore() {
@@ -140,5 +119,14 @@ public class ClientHandler extends Thread {
 
     public void addScore() {
         score++;
+    }
+
+    private void cleanup() {
+        try {
+            if (code != null)
+                QuizServer.removeUser(code);
+            socket.close();
+        } catch (Exception ignored) {
+        }
     }
 }

@@ -13,76 +13,47 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class QuizServer {
 
     private static final int PORT = 12345;
-    private static final int MAX_PLAYERS = 50;
 
     private static List<ClientHandler> clients = new CopyOnWriteArrayList<>();
-
     private static List<Question> questions = new ArrayList<>();
+    private static List<Student> students = new ArrayList<>();
 
-    private static List<Student> authorizedStudents = new ArrayList<>();
+    private static Map<String, ClientHandler> activeClients = new HashMap<>();
+    private static Map<String, Long> lastSeen = new HashMap<>();
 
     private static volatile boolean gameStarted = false;
+
+    // 🔥 DASHBOARD STATE
+    private static volatile String currentQuestion = "";
+    private static volatile int questionIndex = 0;
+
+    private static List<String> cheaters = new ArrayList<>();
 
     public static void main(String[] args) {
 
         loadStudents();
         loadQuestions();
 
-        if (questions.isEmpty()) {
-
-            System.out.println("No questions found.");
-            return;
-        }
+        startTerminalDashboard();
+        startInactivityChecker();
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
 
-            System.out.println(
-                    "===== QUIZ SERVER STARTED =====");
-
-            System.out.println("Waiting for players...");
-            System.out.println("Type START to begin.");
+            System.out.println("SERVER STARTED");
 
             Thread acceptThread = new Thread(() -> {
-
-                while (!gameStarted &&
-                        clients.size() < MAX_PLAYERS) {
-
+                while (!gameStarted) {
                     try {
-
                         Socket socket = serverSocket.accept();
 
-                        if (gameStarted) {
-
-                            PrintWriter out = new PrintWriter(
-                                    socket.getOutputStream(),
-                                    true);
-
-                            out.println(
-                                    "GAME_ALREADY_STARTED");
-
-                            socket.close();
-
-                            continue;
-                        }
-
                         ClientHandler client = new ClientHandler(socket);
-
                         clients.add(client);
-
                         client.start();
 
-                        System.out.println(
-                                "Player connected. Total: "
-                                        + clients.size());
+                        System.out.println("Client joined: " + clients.size());
 
-                    } catch (IOException e) {
-
-                        if (!gameStarted) {
-
-                            System.out.println(
-                                    "Accept Error: "
-                                            + e.getMessage());
-                        }
+                    } catch (Exception e) {
+                        System.out.println("Accept error");
                     }
                 }
             });
@@ -90,128 +61,36 @@ public class QuizServer {
             acceptThread.start();
 
             Scanner sc = new Scanner(System.in);
-
             while (true) {
-
-                String cmd = sc.nextLine();
-
-                if (cmd.equalsIgnoreCase("START")) {
-
-                    if (clients.isEmpty()) {
-
-                        System.out.println(
-                                "No players connected!");
-
-                        continue;
-                    }
-
+                if (sc.nextLine().equalsIgnoreCase("START")) {
                     gameStarted = true;
-
                     break;
                 }
             }
 
             runGame();
 
-        } catch (IOException e) {
-
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static void loadQuestions() {
+    // ================= LOGIN =================
 
-        File file = new File(
-                "data/questions.json");
+    public static synchronized boolean verifyStudent(String name, String pass, String code, ClientHandler handler) {
 
-        if (!file.exists()) {
+        String key = code.toLowerCase();
 
-            questions.add(
-                    new Question(
-                            "What is the capital of France?",
-                            "Paris"));
+        if (activeClients.containsKey(key))
+            return false;
 
-            questions.add(
-                    new Question(
-                            "5 + 7 = ?",
-                            "12"));
+        for (Student s : students) {
+            if (s.getName().equalsIgnoreCase(name)
+                    && s.getPassword().equals(pass)
+                    && s.getCode().equalsIgnoreCase(code)) {
 
-            return;
-        }
-
-        try (Reader reader = new FileReader(file)) {
-
-            Type listType = new TypeToken<ArrayList<Question>>() {
-            }.getType();
-
-            questions = new Gson().fromJson(reader, listType);
-
-            System.out.println(
-                    "Loaded "
-                            + questions.size()
-                            + " questions.");
-
-        } catch (IOException e) {
-
-            System.out.println(
-                    "Question Load Error: "
-                            + e.getMessage());
-        }
-    }
-
-    private static void loadStudents() {
-
-        File file = new File(
-                "data/students.json");
-
-        if (!file.exists()) {
-
-            System.out.println(
-                    "students.json not found!");
-
-            return;
-        }
-
-        try (Reader reader = new FileReader(file)) {
-
-            Type listType = new TypeToken<ArrayList<Student>>() {
-            }.getType();
-
-            authorizedStudents = new Gson().fromJson(reader, listType);
-
-            System.out.println(
-                    "Loaded "
-                            + authorizedStudents.size()
-                            + " students.");
-
-        } catch (IOException e) {
-
-            System.out.println(
-                    "Student Load Error: "
-                            + e.getMessage());
-        }
-    }
-
-    public static boolean verifyStudent(
-            String name,
-            String password,
-            String code) {
-
-        for (Student s : authorizedStudents) {
-
-            boolean matchName = s.getName()
-                    .equalsIgnoreCase(name.trim());
-
-            boolean matchPassword = s.getPassword()
-                    .equals(password.trim());
-
-            boolean matchCode = s.getCode()
-                    .equalsIgnoreCase(code.trim());
-
-            if (matchName &&
-                    matchPassword &&
-                    matchCode) {
-
+                activeClients.put(key, handler);
+                lastSeen.put(key, System.currentTimeMillis());
                 return true;
             }
         }
@@ -219,119 +98,211 @@ public class QuizServer {
         return false;
     }
 
+    public static void updateHeartbeat(String code) {
+        lastSeen.put(code.toLowerCase(), System.currentTimeMillis());
+    }
+
+    public static synchronized void removeUser(String code) {
+        activeClients.remove(code.toLowerCase());
+        lastSeen.remove(code.toLowerCase());
+    }
+
+    public static void reportCheater(String name, String reason) {
+        cheaters.add(name + " | " + reason);
+    }
+
+    // ================= GAME =================
+
     private static void runGame() {
 
-        broadcast("\n=================================");
-        broadcast("        WELCOME TO QUIZIFY");
-        broadcast("\n=================================");
+        broadcast("=== QUIZ STARTED ===");
 
-        for (int i = 0; i < questions.size(); i++) {
+        for (Question q : questions) {
 
-            Question q = questions.get(i);
+            questionIndex++;
+            currentQuestion = q.getQuestion();
 
             for (ClientHandler c : clients) {
                 c.resetAnswer();
+                c.enableAnswering();
             }
 
-            broadcast("\n=================================");
-            broadcast("");
-            broadcast("         QUESTION " + (i + 1));
-            broadcast("\n=================================");
-
-            broadcast("");
             broadcast(q.getQuestion());
-            broadcast("");
-
             broadcast("ANSWER_NOW");
 
-            for (int time = 10; time >= 0; time--) {
+            // 🔥 30 SECOND TIMER
+            for (int t = 30; t >= 0; t--) {
+                broadcast("TIMER:" + t);
+                sleep(1000);
+            }
 
-                broadcast("TIMER:" + time);
-
-                try {
-
-                    Thread.sleep(1000);
-
-                } catch (InterruptedException e) {
-
-                    e.printStackTrace();
-                }
+            for (ClientHandler c : clients) {
+                c.disableAnswering();
             }
 
             broadcast("STOP_ANSWER");
 
-            for (ClientHandler client : clients) {
+            // RESULTS
+            System.out.println("\n===== QUESTION RESULT =====");
+            System.out.println("Correct Answer: " + q.getAnswer());
 
-                String response = client.getLatestAnswer();
+            for (ClientHandler c : clients) {
 
-                if (response == null) {
+                String ans = c.getLatestAnswer();
 
-                    client.sendMessage(
-                            "\nNO ANSWER!");
+                System.out.println(c.getPlayerName()
+                        + " | " + (ans == null ? "\nNO ANSWER" : ans));
 
-                } else if (response.equalsIgnoreCase(
-                        q.getAnswer())) {
-
-                    client.sendMessage(
-                            "\nCORRECT!");
-
-                    client.addScore();
-
+                if (ans != null && ans.equalsIgnoreCase(q.getAnswer())) {
+                    c.addScore();
+                    c.sendMessage("\nCORRECT");
                 } else {
-
-                    client.sendMessage(
-                            "\nWRONG!");
+                    c.sendMessage("\nWRONG");
                 }
             }
 
-            broadcast(generateLeaderboard());
+            broadcastLeaderboard();
 
-            try {
-
-                Thread.sleep(3000);
-
-            } catch (InterruptedException e) {
-
-                e.printStackTrace();
-            }
+            sleep(2000);
         }
-
-        broadcast("\n=================================");
-        broadcast("           GAME OVER");
-        broadcast("=================================");
-
-        broadcast(generateLeaderboard());
 
         broadcast("GAME_OVER");
     }
 
-    private static String generateLeaderboard() {
+    private static void broadcastLeaderboard() {
 
-        List<ClientHandler> sorted = new ArrayList<>(clients);
+        System.out.println("\nLEADERBOARD");
 
-        sorted.sort((a, b) -> Integer.compare(
-                b.getScore(),
-                a.getScore()));
+        clients.sort((a, b) -> b.getScore() - a.getScore());
 
-        StringBuilder sb = new StringBuilder();
+        int rank = 1;
 
-        sb.append("\n===== FINAL RESULTS =====\n");
-
-        for (ClientHandler c : sorted) {
-
-            sb.append(c.getPlayerName())
-                    .append(" | Score: ")
-                    .append(c.getScore())
-                    .append("\n");
+        for (ClientHandler c : clients) {
+            System.out.println(rank + ". " + c.getPlayerName()
+                    + " | " + c.getScore());
+            rank++;
         }
-
-        return sb.toString();
     }
 
     private static void broadcast(String msg) {
+        for (ClientHandler c : clients) {
+            c.sendMessage(msg);
+        }
+    }
 
-        for (ClientHandler client : clients) {
-            client.sendMessage(msg);
+    private static void sleep(int ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (Exception ignored) {
+        }
+    }
+
+    // ================= TERMINAL DASHBOARD =================
+
+    private static void startTerminalDashboard() {
+
+        Thread t = new Thread(() -> {
+
+            while (true) {
+
+                try {
+                    Thread.sleep(2000);
+
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
+
+                    System.out.println("=========== QUIZ DASHBOARD ===========");
+
+                    System.out.println("\nQUESTION:");
+                    System.out.println(currentQuestion);
+                    System.out.println("Progress: " + questionIndex + " / " + questions.size());
+
+                    System.out.println("\nACTIVE USERS:");
+                    for (ClientHandler c : clients) {
+                        System.out.println("- " + c.getPlayerName()
+                                + " | Score: " + c.getScore());
+                    }
+
+                    System.out.println("\nLEADERBOARD:");
+
+                    clients.sort((a, b) -> b.getScore() - a.getScore());
+
+                    int rank = 1;
+                    for (ClientHandler c : clients) {
+                        System.out.println(rank + ". " + c.getPlayerName()
+                                + " | " + c.getScore());
+                        rank++;
+                    }
+
+                    System.out.println("\nCHEATERS:");
+                    if (cheaters.isEmpty()) {
+                        System.out.println("- None");
+                    } else {
+                        for (String ch : cheaters) {
+                            System.out.println("- " + ch);
+                        }
+                    }
+
+                    System.out.println("\n=====================================");
+
+                } catch (Exception e) {
+                    break;
+                }
+            }
+        });
+
+        t.setDaemon(true);
+        t.start();
+    }
+
+    // ================= INACTIVITY =================
+
+    private static void startInactivityChecker() {
+
+        Thread t = new Thread(() -> {
+
+            while (true) {
+                try {
+                    Thread.sleep(3000);
+
+                    long now = System.currentTimeMillis();
+
+                    for (String code : new ArrayList<>(lastSeen.keySet())) {
+                        if (now - lastSeen.get(code) > 60000) {
+                            activeClients.remove(code);
+                            lastSeen.remove(code);
+                        }
+                    }
+
+                } catch (Exception e) {
+                    break;
+                }
+            }
+        });
+
+        t.setDaemon(true);
+        t.start();
+    }
+
+    // ================= LOAD DATA =================
+
+    private static void loadStudents() {
+        try (Reader r = new FileReader("data/students.json")) {
+            Type t = new TypeToken<ArrayList<Student>>() {
+            }.getType();
+            students = new Gson().fromJson(r, t);
+        } catch (Exception e) {
+            System.out.println("Student load error");
+        }
+    }
+
+    private static void loadQuestions() {
+        try (Reader r = new FileReader("data/questions.json")) {
+            Type t = new TypeToken<ArrayList<Question>>() {
+            }.getType();
+            questions = new Gson().fromJson(r, t);
+        } catch (Exception e) {
+            System.out.println("Question load error");
         }
     }
 }
