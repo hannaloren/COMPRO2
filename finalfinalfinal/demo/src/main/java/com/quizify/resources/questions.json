@@ -1,0 +1,13 @@
+[
+  {
+    "type": "MCQ",
+    "prompt": "What is the capital of France?",
+    "options": ["Berlin", "Paris", "Rome", "Madrid"],
+    "correctAnswer": "B"
+  },
+  {
+    "type": "TF",
+    "prompt": "Java is a purely object-oriented language.",
+    "correctAnswer": "F"
+  }
+]
