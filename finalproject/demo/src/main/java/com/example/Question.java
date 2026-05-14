@@ -1,20 +1,23 @@
 package com.example;
 
-public class Question {
+import java.util.Map;
 
+public class Question {
+    private String type;
     private String question;
+    private Map<String, String> choices;
     private String answer;
 
-    public Question() {
-    }
-
-    public Question(String question, String answer) {
-        this.question = question;
-        this.answer = answer;
+    public String getType() {
+        return type;
     }
 
     public String getQuestion() {
         return question;
+    }
+
+    public Map<String, String> getChoices() {
+        return choices;
     }
 
     public String getAnswer() {
