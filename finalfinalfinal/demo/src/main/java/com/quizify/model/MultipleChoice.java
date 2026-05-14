@@ -1,6 +1,5 @@
 package com.quizify.model;
 
-
 public class MultipleChoice extends Question {
 
     private String[] options;
@@ -12,9 +11,10 @@ public class MultipleChoice extends Question {
 
     @Override
     public void display() {
-        System.out.println("[MCQ] " + prompt);
+        System.out.println("Question Type: Multiple Choice");
+        System.out.println(prompt);
         for (int i = 0; i < options.length; i++) {
-            System.out.println((char)('A' + i) + ") " + options[i]);
+            System.out.println((char) ('A' + i) + ") " + options[i]);
         }
     }
 }

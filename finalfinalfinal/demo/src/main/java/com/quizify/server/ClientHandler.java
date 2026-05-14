@@ -1,15 +1,24 @@
 package com.quizify.server;
 
-import common.model.Question;
-import server.ReceiptGenerator.Record;
+import com.quizify.model.*;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.*;
+import java.util.concurrent.*;
 
 public class ClientHandler implements Runnable {
 
     private Socket socket;
+
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
+
+    public String username;
+    public int score = 0;
+
+    public volatile State state = State.LOBBY;
+
+    private Receipt receipt = new Receipt();
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -18,54 +27,141 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
 
-        try (
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream())
-        ) {
+        try {
 
-            out.writeObject("NAME:");
+            out = new ObjectOutputStream(
+                    socket.getOutputStream());
+
+            out.flush();
+
+            in = new ObjectInputStream(
+                    socket.getInputStream());
+
+            out.writeObject("ENTER_NAME");
+            out.flush();
+
             String name = (String) in.readObject();
 
-            out.writeObject("CODE:");
+            out.writeObject("ENTER_CODE");
+            out.flush();
+
             String code = (String) in.readObject();
 
-            if (!AuthService.authenticate(name, code)) {
-                out.writeObject("ACCESS DENIED");
+            boolean valid = false;
+
+            for (Student s : QuizServer.students) {
+
+                if (s.getName().equalsIgnoreCase(name)
+                        &&
+                        s.getCode().equals(code)) {
+
+                    valid = true;
+                    username = s.getName();
+                    break;
+                }
+            }
+
+            if (!valid) {
+
+                out.writeObject("ACCESS_DENIED");
+                out.flush();
+
+                socket.close();
                 return;
             }
 
-            out.writeObject("WELCOME " + name);
-
-            int score = 0;
-            List<Record> records = new ArrayList<>();
-
-            out.writeInt(QuizServer.questions.size());
+            out.writeObject("ACCESS_GRANTED");
             out.flush();
+
+            QuizServer.clients.add(this);
+
+            while (!QuizServer.gameStarted) {
+
+                state = State.LOBBY;
+                Thread.sleep(1000);
+            }
+
+            state = State.IN_GAME;
+            out.writeObject("START_GAME");
+            out.flush();
+
+            out.writeObject(
+                    QuizServer.questions.size());
+
+            out.flush();
+
+            int round = 1;
 
             for (Question q : QuizServer.questions) {
 
+                System.out.println();
+                System.out.println("ROUND " + round);
+
                 out.writeObject(q);
+                out.flush();
 
-                String ans = (String) in.readObject();
+                out.writeObject(30);
+                out.flush();
 
-                boolean correct = q.checkAnswer(ans);
+                ExecutorService executor = Executors.newSingleThreadExecutor();
 
-                if (correct) score++;
+                Future<String> future = executor.submit(() -> (String) in.readObject());
 
-                records.add(new Record(
-                        q.getPrompt(),
-                        ans,
-                        q.getCorrectAnswer(),
-                        correct
-                ));
+                String answer;
+
+                try {
+
+                    answer = future.get(
+                            30,
+                            TimeUnit.SECONDS);
+
+                } catch (TimeoutException e) {
+
+                    answer = "NO ANSWER";
+
+                    future.cancel(true);
+                }
+
+                executor.shutdownNow();
+
+                boolean correct = answer.equalsIgnoreCase(
+                        q.getCorrectAnswer());
+
+                if (correct) {
+                    score++;
+                }
+
+                receipt.add(
+                        "Question: " + q.getPrompt()
+                                + " | Your Answer: "
+                                + answer
+                                + " | Correct Answer: "
+                                + q.getCorrectAnswer()
+                                + " | Result: "
+                                + (correct ? "CORRECT" : "WRONG"));
+
+                Leaderboard.show(QuizServer.clients);
+
+                round++;
             }
 
-            out.writeObject("FINISHED SCORE: " + score);
+            state = State.FINISHED;
 
-            ReceiptGenerator.generate(name, records, score, QuizServer.questions.size());
+            QuizServer.checkIfAllFinished();
+            out.writeObject("GAME_OVER");
+            out.flush();
+
+            receipt.exportToFile(username, score);
+
+            out.writeObject(
+                    "RECEIPT_SAVED");
+
+            out.flush();
 
         } catch (Exception e) {
-            System.out.println("Client disconnected");
+
+            System.out.println(
+                    username + " disconnected.");
         }
     }
 }

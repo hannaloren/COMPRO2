@@ -1,13 +1,67 @@
 [
   {
     "type": "MCQ",
-    "prompt": "What is the capital of France?",
-    "options": ["Berlin", "Paris", "Rome", "Madrid"],
-    "correctAnswer": "B"
+    "prompt": "Which data structure uses FIFO?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Tree",
+      "Graph"
+    ],
+    "correctAnswer": "Queue"
   },
+
   {
     "type": "TF",
-    "prompt": "Java is a purely object-oriented language.",
+    "prompt": "Java supports multiple inheritance using classes.",
     "correctAnswer": "F"
+  },
+
+  {
+    "type": "ID",
+    "prompt": "What keyword is used to inherit a class in Java?",
+    "correctAnswer": "extends"
+  },
+
+  {
+    "type": "MCQ",
+    "prompt": "Which company developed Java?",
+    "options": [
+      "Microsoft",
+      "Sun Microsystems",
+      "Google",
+      "Apple"
+    ],
+    "correctAnswer": "Sun Microsystems"
+  },
+
+  {
+    "type": "T/F",
+    "prompt": "An array in Java can change its size dynamically.",
+    "correctAnswer": "F"
+  },
+
+  {
+    "type": "ID",
+    "prompt": "Who is known as the father of Java?",
+    "correctAnswer": "James Gosling"
+  },
+
+  {
+    "type": "MC",
+    "prompt": "Which loop executes at least once?",
+    "options": [
+      "for loop",
+      "while loop",
+      "do-while loop",
+      "enhanced for loop"
+    ],
+    "correctAnswer": "do-while loop"
+  },
+
+  {
+    "type": "T/F",
+    "prompt": "The JVM stands for Java Virtual Machine.",
+    "correctAnswer": "T"
   }
 ]

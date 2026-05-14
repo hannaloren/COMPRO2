@@ -9,7 +9,8 @@ public class TrueFalse extends Question {
 
     @Override
     public void display() {
-        System.out.println("[TRUE/FALSE] " + prompt);
+        System.out.println("Question Type: True/False");
+        System.out.println(prompt);
         System.out.println("Enter T or F");
     }
 }
