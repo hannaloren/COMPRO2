@@ -2,19 +2,31 @@
             QUIZIFY RECEIPT
 ====================================
 Student: Hanna
-Score: 1
-Generated: 2026-05-14T20:29:05.714402
+Score: 0
+Generated: 2026-05-15T20:40:52.074169200
 ====================================
 
-Question: Which data structure uses FIFO? | Your Answer: a | Correct Answer: Queue | Result: WRONG
+Question: Which data structure uses FIFO? | Your Answer: a | Correct: Queue | Result: WRONG | Time: 2 sec
 ------------------------------------
-Question: Java supports multiple inheritance using classes. | Your Answer: f | Correct Answer: F | Result: CORRECT
+Question: Java supports multiple inheritance using classes. | Your Answer: s | Correct: F | Result: WRONG | Time: 0 sec
 ------------------------------------
-Question: What keyword is used to inherit a class in Java? | Your Answer: idk | Correct Answer: extends | Result: WRONG
+Question: What keyword is used to inherit a class in Java? | Your Answer: a | Correct: extends | Result: WRONG | Time: 0 sec
 ------------------------------------
-Question: Which company developed Java? | Your Answer: what | Correct Answer: Sun Microsystems | Result: WRONG
+Question: Which company developed Java? | Your Answer: w | Correct: Sun Microsystems | Result: WRONG | Time: 0 sec
 ------------------------------------
-Question: Who is known as the father of Java? | Your Answer: ha | Correct Answer: James Gosling | Result: WRONG
+Question: Who is known as the father of Java? | Your Answer: a | Correct: James Gosling | Result: WRONG | Time: 0 sec
+------------------------------------
+====================================
+------------------------------------
+FINAL SCORE: 0
+------------------------------------
+Average Answer Time: 0 sec
+------------------------------------
+Suspicious Attempts: 4
+------------------------------------
+Timeouts: 0
+------------------------------------
+Flagged: YES
 ------------------------------------
 
 ====================================

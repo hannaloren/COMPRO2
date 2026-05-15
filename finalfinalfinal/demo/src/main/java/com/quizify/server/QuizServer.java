@@ -1,13 +1,13 @@
 package com.quizify.server;
 
-import com.quizify.model.Question;
-import com.quizify.model.Student;
-
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import com.quizify.model.Question;
+import com.quizify.model.Student;
 
 public class QuizServer {
 
@@ -94,8 +94,6 @@ public class QuizServer {
                                             c.state);
                         }
 
-                        System.out.println("============================");
-
                         Thread.sleep(5000);
 
                     }
@@ -117,7 +115,7 @@ public class QuizServer {
                     gameStarted = true;
 
                     System.out.println();
-                    System.out.println("====================================");
+
                     System.out.println("         GAME STARTED");
                     System.out.println("====================================");
                 }

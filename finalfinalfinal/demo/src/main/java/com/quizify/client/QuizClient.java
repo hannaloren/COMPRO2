@@ -1,11 +1,12 @@
 package com.quizify.client;
 
-import com.quizify.model.Question;
-import com.quizify.model.Receipt;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Scanner;
+
+import com.quizify.model.Question;
 
 public class QuizClient {
 
@@ -21,7 +22,8 @@ public class QuizClient {
                 ObjectInputStream in = new ObjectInputStream(
                         socket.getInputStream());
 
-                Scanner sc = new Scanner(System.in)
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(System.in))
 
         ) {
 
@@ -30,50 +32,43 @@ public class QuizClient {
             System.out.println("             QUIZIFY");
             System.out.println("====================================");
 
+            // AUTHENTICATION
             System.out.print("Enter Name: ");
-            out.writeObject(sc.nextLine());
+            out.writeObject(br.readLine());
             out.flush();
 
             System.out.print("Enter Code: ");
-            out.writeObject(sc.nextLine());
+            out.writeObject(br.readLine());
             out.flush();
 
             String status = (String) in.readObject();
 
             if (status.equals("ACCESS_DENIED")) {
 
-                System.out.println();
-                System.out.println("ACCESS DENIED");
+                System.out.println("\nACCESS DENIED");
                 return;
             }
 
-            System.out.println();
-            System.out.println();
-            System.out.println("ACCESS GRANTED");
+            System.out.println("\nACCESS GRANTED");
             System.out.println("Waiting for teacher...");
 
-            // WAIT FOR SERVER START SIGNAL
+            // WAIT FOR GAME START
             while (true) {
 
-                Object obj = in.readObject();
+                String msg = (String) in.readObject();
 
-                if (obj instanceof String msg) {
-
-                    if (msg.equals("START_GAME")) {
-
-                        System.out.println();
-                        System.out.println("====================================");
-                        System.out.println("         GAME STARTED!");
-                        System.out.println("====================================");
-
-                        break;
-                    }
+                if (msg.equals("START_GAME")) {
+                    break;
                 }
             }
 
-            // NOW RECEIVE TOTAL QUESTIONS
+            System.out.println();
+            System.out.println("         GAME STARTED!");
+            System.out.println("====================================");
+
             int total = (Integer) in.readObject();
 
+            // QUESTIONS LOOP
             for (int i = 0; i < total; i++) {
 
                 Question q = (Question) in.readObject();
@@ -81,58 +76,59 @@ public class QuizClient {
                 int timer = (Integer) in.readObject();
 
                 System.out.println();
-                System.out.println("====================================");
 
                 q.display();
 
-                TimerThread tt = new TimerThread(timer);
-                tt.start();
+                String answer = "NO ANSWER";
 
-                System.out.println();
-                System.out.print("Your Answer: ");
+                // TIMER LOOP
+                for (int t = timer; t >= 0; t--) {
 
-                AnswerThread at = new AnswerThread(sc);
-                at.start();
+                    System.out.print(
+                            "\rTime Left: "
+                                    + t
+                                    + " seconds ");
 
-                at.join(timer * 1000L);
+                    long start = System.currentTimeMillis();
 
-                String answer;
+                    while (System.currentTimeMillis()
+                            - start < 1000) {
 
-                if (at.isAlive()) {
+                        // CHECK INPUT
+                        if (br.ready()) {
 
-                    answer = "NO ANSWER";
+                            answer = br.readLine();
 
-                    System.out.println("\nTIME IS UP!");
-
-                } else {
-
-                    answer = at.answer;
+                            t = -1;
+                            break;
+                        }
+                    }
                 }
 
-                // STOP TIMER
-                tt.running = false;
+                if (answer.equals("NO ANSWER")) {
+
+                    System.out.println("\nTIME IS UP!");
+                }
 
                 out.writeObject(answer);
                 out.flush();
             }
 
+            String end = (String) in.readObject();
+
             System.out.println();
-            System.out.println(in.readObject());
+            System.out.println(end);
 
-            String finalMsg = (String) in.readObject();
+            String receiptMsg = (String) in.readObject();
 
-            if (finalMsg.equals("RECEIPT_SAVED")) {
-
-                System.out.println();
-                System.out.println("====================================");
-                System.out.println(" Receipt file generated successfully");
-                System.out.println("====================================");
-            }
+            System.out.println(receiptMsg);
 
         } catch (Exception e) {
 
             System.out.println(
-                    "Disconnected from server.");
+                    "\nDisconnected from server.");
+
+            e.printStackTrace();
         }
     }
 }
