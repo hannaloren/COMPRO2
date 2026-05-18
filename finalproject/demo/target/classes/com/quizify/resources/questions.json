@@ -8,7 +8,7 @@
       "Tree",
       "Graph"
     ],
-    "correctAnswer": "Queue"
+    "correctAnswer": "B"
   },
 
   {
@@ -32,7 +32,7 @@
       "Google",
       "Apple"
     ],
-    "correctAnswer": "Sun Microsystems"
+    "correctAnswer": "B"
   },
 
   {
@@ -56,7 +56,7 @@
       "do-while loop",
       "enhanced for loop"
     ],
-    "correctAnswer": "do-while loop"
+    "correctAnswer": "C"
   },
 
   {
@@ -78,6 +78,6 @@
       "extends",
       "main"
     ],
-    "correctAnswer": "main"
+    "correctAnswer": "D"
   }
 ]

@@ -2,21 +2,21 @@
             QUIZIFY RECEIPT
 ====================================
 Student: Hanna
-Score: 0
-Generated: 05/18/2026 08:03:12
+Score: 4
+Generated: 05/18/2026 13:23:08
 ====================================
 
-Question: Which data structure uses FIFO? | Your Answer: aa | Correct: Queue | Result: WRONG | Time: 2 sec
+Question: Which data structure uses FIFO? | Your Answer: b | Correct: B | Result: CORRECT | Time: 4 sec
 ------------------------------------
-Question: Java supports multiple inheritance using classes. | Your Answer: t | Correct: F | Result: WRONG | Time: 2 sec
+Question: Java supports multiple inheritance using classes. | Your Answer: f | Correct: F | Result: CORRECT | Time: 1 sec
 ------------------------------------
-Question: Which company developed Java? | Your Answer: a | Correct: Sun Microsystems | Result: WRONG | Time: 1 sec
+Question: Which company developed Java? | Your Answer: b | Correct: B | Result: CORRECT | Time: 3 sec
 ------------------------------------
-Question: Which of the following is not a Java keyword? | Your Answer: d | Correct: main | Result: WRONG | Time: 3 sec
+Question: Which of the following is not a Java keyword? | Your Answer: d | Correct: D | Result: CORRECT | Time: 2 sec
 ------------------------------------
 ====================================
 ------------------------------------
-FINAL SCORE: 0
+FINAL SCORE: 4
 ------------------------------------
 Average Answer Time: 2 sec
 ------------------------------------

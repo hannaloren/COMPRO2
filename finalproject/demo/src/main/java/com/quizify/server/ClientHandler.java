@@ -241,12 +241,12 @@ public class ClientHandler implements Runnable {
                                         score);
 
                         out.writeObject(
-                                        "GAME_OVER");
+                                        "GAME OVER");
 
                         out.flush();
 
                         out.writeObject(
-                                        "RECEIPT_SAVED");
+                                        "RECEIPT SAVED");
 
                         out.flush();
 
