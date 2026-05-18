@@ -18,7 +18,7 @@
   },
 
   {
-    "type": "ID",
+    "type": "IDENTIFICATION",
     "prompt": "What keyword is used to inherit a class in Java?",
     "correctAnswer": "extends"
   },
@@ -42,7 +42,7 @@
   },
 
   {
-    "type": "ID",
+    "type": "IDENTIFICATION",
     "prompt": "Who is known as the father of Java?",
     "correctAnswer": "James Gosling"
   },
@@ -63,5 +63,21 @@
     "type": "T/F",
     "prompt": "The JVM stands for Java Virtual Machine.",
     "correctAnswer": "T"
+  },
+  {
+    "type": "IDENTIFICATION",
+    "prompt": "What is the file extension for Java source files?",
+    "correctAnswer": ".java"
+  },
+  {
+    "type": "MCQ",
+    "prompt": "Which of the following is not a Java keyword?",
+    "options": [
+      "class",
+      "interface",
+      "extends",
+      "main"
+    ],
+    "correctAnswer": "main"
   }
 ]

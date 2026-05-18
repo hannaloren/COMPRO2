@@ -42,10 +42,10 @@ public class QuizServer {
         try {
 
             questions = QuestionLoader.load(
-                    "C:\\Users\\Asus Vivobook\\COMPRO2\\finalfinalfinal\\demo\\src\\main\\java\\com\\quizify\\resources\\questions.json");
+                    "C:\\Users\\Asus Vivobook\\COMPRO2\\finalproject\\demo\\src\\main\\java\\com\\quizify\\resources\\questions.json");
 
             students = StudentLoader.load(
-                    "C:\\Users\\Asus Vivobook\\COMPRO2\\finalfinalfinal\\demo\\src\\main\\java\\com\\quizify\\resources\\students.json");
+                    "C:\\Users\\Asus Vivobook\\COMPRO2\\finalproject\\demo\\src\\main\\java\\com\\quizify\\resources\\students.json");
 
             ServerSocket server = new ServerSocket(5000);
 
