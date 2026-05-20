@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import com.quizify.model.Question;
+import com.quizify.model.Receipt;
 
 public class QuizClient {
 
@@ -18,7 +19,7 @@ public class QuizClient {
 
                 ObjectOutputStream out = new ObjectOutputStream(
                         socket.getOutputStream());
-
+             
                 ObjectInputStream in = new ObjectInputStream(
                         socket.getInputStream());
 
@@ -32,7 +33,6 @@ public class QuizClient {
             System.out.println("             QUIZIFY");
             System.out.println("====================================");
 
-            // AUTHENTICATION
             System.out.print("Enter Name: ");
             out.writeObject(br.readLine());
             out.flush();
@@ -42,33 +42,64 @@ public class QuizClient {
             out.flush();
 
             String status = (String) in.readObject();
-
             if (status.equals("ACCESS_DENIED")) {
 
-                System.out.println("\nACCESS DENIED");
+                System.out.println();
+                System.out.println("ACCESS DENIED");
+                System.out.println("Student not found.");
+
+                socket.close();
+
                 return;
             }
 
-            System.out.println("\nACCESS GRANTED");
-            System.out.println("Waiting for teacher...");
+            if (status.equals("ACCOUNT_ALREADY_LOGGED_IN")) {
+                System.out.println("Student is already logged in.");
 
-            // WAIT FOR GAME START
-            while (true) {
+                socket.close();
 
-                String msg = (String) in.readObject();
+                return;
+            }
 
-                if (msg.equals("START_GAME")) {
-                    break;
+            if (status.equals("ACCESS_GRANTED")) {
+
+                System.out.println();
+                System.out.println("ACCESS GRANTED");
+                System.out.println(
+                        "Waiting for teacher to start the quiz...");
+            }
+            System.out.println("ACCESS GRANTED");
+            System.out.println(
+                    "Waiting for teacher to start the quiz...");
+            boolean waiting = true;
+
+            while (waiting) {
+                try {
+                    Object obj = in.readObject();
+
+                    if (obj instanceof String msg) {
+
+                        if (msg.equals("START_QUIZ")) {
+                            waiting = false;
+                        }
+                    }
+
+                } catch (java.io.EOFException eof) {
+                    System.out.println("Server closed connection unexpectedly.");
+                    return;
+                } catch (Exception e) {
+                    System.out.println("Disconnected while waiting for quiz start.");
+                    return;
                 }
             }
 
             System.out.println();
-            System.out.println("         GAME STARTED!");
+            System.out.println("====================================");
+            System.out.println("         QUIZ STARTED!");
             System.out.println("====================================");
 
             int total = (Integer) in.readObject();
 
-            // QUESTIONS LOOP
             for (int i = 0; i < total; i++) {
 
                 Question q = (Question) in.readObject();
@@ -76,39 +107,61 @@ public class QuizClient {
                 int timer = (Integer) in.readObject();
 
                 System.out.println();
+                System.out.println("====================================");
 
                 q.display();
 
+                System.out.println();
+
                 String answer = "NO ANSWER";
 
-                // TIMER LOOP
-                for (int t = timer; t >= 0; t--) {
+                long startTime = System.currentTimeMillis();
 
-                    System.out.print(
-                            "\rTime Left: "
-                                    + t
-                                    + " seconds ");
+                long lastDisplayedSecond = -1;
 
-                    long start = System.currentTimeMillis();
+                while (true) {
 
-                    while (System.currentTimeMillis()
-                            - start < 1000) {
+                    long elapsed = (System.currentTimeMillis()
+                            - startTime) / 1000;
 
-                        // CHECK INPUT
-                        if (br.ready()) {
+                    long remaining = timer - elapsed;
 
-                            answer = br.readLine();
+                    if (remaining != lastDisplayedSecond
+                            && remaining >= 0) {
 
-                            t = -1;
-                            break;
-                        }
+                        System.out.print(
+                                "\rTime Left: "
+                                        + remaining
+                                        + " seconds      ");
+
+                        lastDisplayedSecond = remaining;
+                    }
+
+                    if (remaining <= 0) {
+
+                        answer = "NO ANSWER";
+
+                        break;
+                    }
+
+                    if (br.ready()) {
+
+                        answer = br.readLine();
+
+                        break;
                     }
                 }
 
+                System.out.println();
+
                 if (answer.equals("NO ANSWER")) {
 
-                    System.out.println("\nTIME IS UP!");
+                    System.out.println(
+                            "TIME IS UP!");
                 }
+
+                System.out.print("Your Answer: ");
+                System.out.println(answer);
 
                 out.writeObject(answer);
                 out.flush();
@@ -119,9 +172,13 @@ public class QuizClient {
             System.out.println();
             System.out.println(end);
 
-            String receiptMsg = (String) in.readObject();
+            Receipt receipt = (Receipt) in.readObject();
 
-            System.out.println(receiptMsg);
+            String username = (String) in.readObject();
+
+            int score = (Integer) in.readObject();
+
+            receipt.print(username, score);
 
         } catch (Exception e) {
 

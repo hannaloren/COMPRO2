@@ -2,6 +2,6 @@ package com.quizify.server;
 
 public enum State {
     LOBBY,
-    IN_GAME,
+    IN_QUIZ,
     FINISHED
 }

@@ -6,20 +6,23 @@ import java.net.Socket;
 
 import com.quizify.model.Question;
 import com.quizify.model.Receipt;
-import com.quizify.model.Student;
 
 public class ClientHandler implements Runnable {
 
         private Socket socket;
         private ObjectInputStream in;
         private ObjectOutputStream out;
+
         public String username;
         public int score = 0;
+
         public volatile State state = State.LOBBY;
+
         public int suspiciousCount = 0;
         public int timeoutCount = 0;
         public long totalAnswerTime = 0;
         public boolean flagged = false;
+
         private Receipt receipt = new Receipt();
 
         public ClientHandler(Socket socket) {
@@ -31,14 +34,13 @@ public class ClientHandler implements Runnable {
 
                 try {
 
-                        out = new ObjectOutputStream(
-                                        socket.getOutputStream());
-
+                        out = new ObjectOutputStream(socket.getOutputStream());
                         out.flush();
+                        in = new ObjectInputStream(socket.getInputStream());
 
-                        in = new ObjectInputStream(
-                                        socket.getInputStream());
-
+                        // =========================
+                        // AUTH
+                        // =========================
                         out.writeObject("ENTER_NAME");
                         out.flush();
 
@@ -48,88 +50,75 @@ public class ClientHandler implements Runnable {
                         out.flush();
 
                         String code = (String) in.readObject();
-
                         boolean valid = false;
+                        String sharedCode = "QUIZ123";
 
-                        for (Student s : QuizServer.students) {
-
-                                if (s.getName()
-                                                .equalsIgnoreCase(name)
-                                                &&
-                                                s.getCode()
-                                                                .equals(code)) {
-
+                        for (String student : QuizServer.students) {
+                                if (student.equalsIgnoreCase(name)
+                                                && code.equals(sharedCode)) {
                                         valid = true;
-
-                                        username = s.getName();
-
+                                        username = student;
                                         break;
                                 }
                         }
 
                         if (!valid) {
-
                                 out.writeObject("ACCESS_DENIED");
                                 out.flush();
+                                socket.close();
+                                return;
+                        }
+                        if (QuizServer.activeUsers.containsKey(name.toLowerCase())) {
+
+                                out.writeObject("ACCOUNT_ALREADY_LOGGED_IN");
+                                out.flush();
+
+                                try {
+                                        Thread.sleep(200); // 🔥 allow client to receive message
+                                } catch (InterruptedException ignored) {
+                                }
 
                                 socket.close();
-
                                 return;
                         }
 
-                        for (ClientHandler c : QuizServer.clients) {
-
-                                if (c.username != null
-                                                &&
-                                                c.username.equalsIgnoreCase(name)
-                                                &&
-                                                c.state != State.FINISHED) {
-
-                                        out.writeObject(
-                                                        "ACCOUNT_ALREADY_LOGGED_IN");
-
+                        username = name;
+                        synchronized (QuizServer.activeUsers) {
+                                if (QuizServer.activeUsers.containsKey(username.toLowerCase())) {
+                                        out.writeObject("ACCOUNT_ALREADY_LOGGED_IN");
                                         out.flush();
-
                                         socket.close();
-
                                         return;
                                 }
+
+                                QuizServer.activeUsers.put(username.toLowerCase(), this);
                         }
+                        QuizServer.clients.add(this);
 
                         out.writeObject("ACCESS_GRANTED");
                         out.flush();
 
-                        QuizServer.clients.add(this);
+                        while (!QuizServer.quizStarted) {
 
-                        // wait to start
-
-                        while (!QuizServer.gameStarted) {
+                                if (socket.isClosed()) {
+                                        return;
+                                }
 
                                 state = State.LOBBY;
-
-                                Thread.sleep(1000);
+                                Thread.sleep(200);
                         }
 
-                        state = State.IN_GAME;
+                        state = State.IN_QUIZ;
 
-                        out.writeObject("START_GAME");
+                        out.writeObject("START_QUIZ");
                         out.flush();
 
-                        out.writeObject(
-                                        QuizServer.questions.size());
-
+                        out.writeObject(QuizServer.questions.size());
                         out.flush();
 
                         int round = 1;
 
                         for (Question q : QuizServer.questions) {
-
-                                System.out.println();
-                                System.out.println(
-                                                "ROUND "
-                                                                + round
-                                                                + " / "
-                                                                + QuizServer.questions.size());
 
                                 out.writeObject(q);
                                 out.flush();
@@ -142,121 +131,68 @@ public class ClientHandler implements Runnable {
                                 String answer = (String) in.readObject();
 
                                 long endTime = System.currentTimeMillis();
+                                long duration = (endTime - startTime) / 1000;
 
-                                long answerDuration = (endTime - startTime) / 1000;
+                                totalAnswerTime += duration;
 
-                                totalAnswerTime += answerDuration;
-
-                                if (answerDuration > 30) {
-
+                                if (duration > 30) {
                                         answer = "NO ANSWER";
                                 }
 
-                                if (answer.equalsIgnoreCase(
-                                                "NO ANSWER")) {
-
+                                if (answer.equalsIgnoreCase("NO ANSWER")) {
                                         timeoutCount++;
                                 }
 
-                                if (answerDuration <= 1
-                                                &&
-                                                !answer.equalsIgnoreCase(
-                                                                "NO ANSWER")) {
-
+                                if (duration <= 1 && !answer.equalsIgnoreCase("NO ANSWER")) {
                                         suspiciousCount++;
-
-                                        System.out.println(
-                                                        "[ANTI-CHEAT] "
-                                                                        + username
-                                                                        + " answered suspiciously fast!");
                                 }
 
-                                boolean correct = answer.equalsIgnoreCase(
-                                                q.getCorrectAnswer());
+                                boolean correct = answer.equalsIgnoreCase(q.getCorrectAnswer());
 
-                                if (correct) {
+                                if (correct)
                                         score++;
-                                }
-
-                                if (suspiciousCount >= 3
-                                                ||
-                                                timeoutCount >= 5) {
-
-                                        flagged = true;
-                                }
 
                                 receipt.add(
-                                                "Question: "
-                                                                + q.getPrompt()
-                                                                + " | Your Answer: "
-                                                                + answer
-                                                                + " | Correct: "
-                                                                + q.getCorrectAnswer()
-                                                                + " | Result: "
-                                                                + (correct
-                                                                                ? "CORRECT"
-                                                                                : "WRONG")
-                                                                + " | Time: "
-                                                                + answerDuration
-                                                                + " sec");
-
-                                Leaderboard.show(
-                                                QuizServer.clients);
+                                                "Q: " + q.getPrompt() +
+                                                                "\nYour Answer: " + answer +
+                                                                "\nCorrect: " + q.getCorrectAnswer() + "\n");
 
                                 round++;
                         }
 
                         state = State.FINISHED;
 
-                        receipt.add(
-                                        "====================================");
+                        receipt.add("\nFINAL SCORE: " + score);
+                        receipt.add("Flagged: " + flagged);
 
-                        receipt.add(
-                                        "FINAL SCORE: "
-                                                        + score);
-
-                        receipt.add(
-                                        "Average Answer Time: "
-                                                        + (totalAnswerTime
-                                                                        /
-                                                                        QuizServer.questions.size())
-                                                        + " sec");
-
-                        receipt.add(
-                                        "Suspicious Attempts: "
-                                                        + suspiciousCount);
-
-                        receipt.add(
-                                        "Timeouts: "
-                                                        + timeoutCount);
-
-                        receipt.add(
-                                        "Flagged: "
-                                                        + (flagged
-                                                                        ? "YES"
-                                                                        : "NO"));
-
-                        receipt.exportToFile(
-                                        username,
-                                        score);
-
-                        out.writeObject(
-                                        "GAME OVER");
-
+                        out.writeObject("QUIZ_FINISHED");
                         out.flush();
 
-                        out.writeObject(
-                                        "RECEIPT SAVED");
+                        out.writeObject(receipt);
+                        out.flush();
 
+                        out.writeObject(username);
+                        out.flush();
+
+                        out.writeObject(score);
                         out.flush();
 
                         QuizServer.checkIfAllFinished();
 
                 } catch (Exception e) {
+                        System.out.println(username + " disconnected.");
+                }
 
-                        System.out.println(
-                                        username
-                                                        + " disconnected.");
+                finally {
+                        try {
+                                if (username != null) {
+                                        QuizServer.activeUsers.remove(username.toLowerCase());
+                                }
+
+                                socket.close();
+
+                        } catch (Exception ignored) {
+                        }
                 }
         }
 }
